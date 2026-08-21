@@ -32,12 +32,12 @@
   --shadow-md:   0 4px 12px rgba(0,0,0,.09);
 }
 body { font-family:'Inter',system-ui,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
-.page { max-width:1440px; margin:0 auto; padding:32px 40px 60px; }
+.page { max-width:1440px; margin:0 auto; padding:32px 40px 100px; }
 
 /* ── HEADER ── */
 .header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:24px; }
 .eyebrow { font-size:10px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--purple-mid); margin-bottom:5px; }
-.header-title { font-size:26px; font-weight:800; color:var(--text); line-height:1.2; }
+.header-title { font-size:36px; font-weight:800; color:var(--text); line-height:1.2; }
 .header-sub { font-size:13px; color:var(--text-muted); margin-top:4px; }
 .header-right { display:flex; flex-direction:column; align-items:flex-end; gap:7px; }
 .date-badge { background:var(--purple); color:#fff; font-size:12px; font-weight:600; padding:5px 14px; border-radius:100px; white-space:nowrap; }
@@ -48,20 +48,20 @@ body { font-family:'Inter',system-ui,sans-serif; background:var(--bg); color:var
 .refresh-btn.loading { opacity:.5; pointer-events:none; }
 .refresh-status { font-size:11px; color:var(--bad); text-align:right; max-width:320px; }
 
-/* ── TOP-LEVEL TABS (Delivery / Catalog) ── */
-.top-tabs { display:flex; gap:4px; margin-bottom:24px; border-bottom:2px solid var(--border); padding-bottom:0; }
-.top-tab { font-size:13px; font-weight:600; padding:10px 20px; border-radius:10px 10px 0 0; border:none; background:transparent; color:var(--text-muted); cursor:pointer; transition:all .15s; position:relative; bottom:-2px; border:2px solid transparent; border-bottom:none; }
-.top-tab.active { background:var(--card); color:var(--purple); border-color:var(--border); border-bottom:2px solid var(--card); }
-.top-tab:hover:not(.active) { color:var(--purple); background:var(--purple-soft); }
+/* ── BOTTOM TAB BAR ── */
+.bottom-tabs { position:fixed; bottom:0; left:0; right:0; z-index:100; display:flex; background:var(--card); border-top:2px solid var(--border); box-shadow:0 -4px 16px rgba(0,0,0,.08); }
+.bottom-tab { flex:1; font-size:13px; font-weight:600; padding:14px 10px; border:none; background:transparent; color:var(--text-muted); cursor:pointer; transition:all .15s; border-top:3px solid transparent; }
+.bottom-tab.active { color:var(--purple); border-top-color:var(--purple); background:var(--purple-soft); }
+.bottom-tab:hover:not(.active) { color:var(--purple); background:var(--row-alt); }
 .tab-pane { display:none; }
 .tab-pane.active { display:block; }
 
-/* ── SEGMENT PILLS ── */
-.seg-bar { display:flex; gap:8px; margin-bottom:24px; flex-wrap:wrap; align-items:center; }
-.seg-label { font-size:11px; font-weight:600; color:var(--text-muted); margin-right:4px; }
-.seg-pill { font-size:12px; font-weight:600; padding:6px 16px; border-radius:100px; cursor:pointer; border:1.5px solid var(--border); background:transparent; color:var(--text-muted); transition:all .15s; }
-.seg-pill.active { background:var(--purple); border-color:var(--purple); color:#fff; }
-.seg-pill:hover:not(.active) { border-color:var(--purple-mid); color:var(--purple); }
+/* ── SEGMENT DASHBOARD SECTIONS ── */
+.seg-section { margin-bottom:44px; padding-top:32px; border-top:2px solid var(--border); }
+.seg-section:first-child { border-top:none; padding-top:0; }
+.seg-badge { font-size:16px; font-weight:800; color:#fff; padding:5px 16px; border-radius:100px; letter-spacing:.07em; vertical-align:middle; }
+.seg-trend-label { display:flex; align-items:center; gap:10px; margin-bottom:12px; margin-top:20px; }
+.seg-trend-title { font-size:13px; font-weight:600; color:var(--text-muted); }
 
 /* ── METRICS BANNER ── */
 .banner { display:flex; gap:6px; align-items:center; background:var(--card); border:1px solid var(--border); border-radius:10px; padding:9px 16px; margin-bottom:24px; box-shadow:var(--shadow); flex-wrap:wrap; }
@@ -123,10 +123,12 @@ body { font-family:'Inter',system-ui,sans-serif; background:var(--bg); color:var
 /* 3 product cards side by side; rows = metrics, cols = months */
 .trend-wrap { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:32px; align-items:start; }
 .trend-card { background:var(--card); border:1px solid var(--border); border-radius:14px; overflow:hidden; box-shadow:var(--shadow); }
-.trend-card-hdr { padding:13px 16px 10px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:9px; }
+.trend-card-hdr { padding:13px 16px 10px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:9px; justify-content:space-between; }
 .trend-card-hdr .prod-dot { width:11px; height:11px; border-radius:50%; flex-shrink:0; }
 .trend-card-hdr .prod-name { font-size:14px; font-weight:700; color:var(--text); }
 .trend-card-hdr .prod-owner { font-size:11px; color:var(--text-muted); margin-top:1px; }
+.trend-card-hdr-left { display:flex; align-items:center; gap:9px; }
+.trend-sla-badge { font-size:15px; font-weight:800; color:var(--purple); background:var(--purple-soft); padding:4px 10px; border-radius:8px; white-space:nowrap; }
 /* table-layout:fixed + <colgroup> widths set in JS lock all 3 cards to the exact same column positions */
 table.tt { width:100%; border-collapse:collapse; table-layout:fixed; }
 table.tt th { font-size:10px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--text-muted); padding:8px 12px; text-align:right; background:#F8F7FD; border-bottom:1px solid var(--border); overflow:hidden; white-space:nowrap; }
@@ -228,66 +230,22 @@ footer { padding-top:24px; border-top:1px solid var(--border); font-size:11px; c
   <!-- HEADER -->
   <div class="header">
     <div>
-      <div class="eyebrow">Production Ops · MBR Dashboard</div>
-      <h1 class="header-title">Delivery Performance Review</h1>
-      <p class="header-sub">Month-wise Trend — Image &nbsp;·&nbsp; 360 &nbsp;·&nbsp; Video &nbsp;·&nbsp; Catalog</p>
+      <h1 class="header-title" id="pageTitle">Studio Create (1/3)</h1>
     </div>
-    <div class="header-right">
-      <div class="date-badge">May '26 → Aug '26 · Latest: Aug</div>
-      <div class="refresh-row">
-        <span class="updated-text" id="updatedStamp">Loading…</span>
-        <button class="refresh-btn" id="refreshBtn" type="button">⟳ Refresh</button>
-      </div>
-      <div class="refresh-status" id="refreshStatus"></div>
-    </div>
-  </div>
-
-  <!-- TOP-LEVEL TABS -->
-  <div class="top-tabs">
-    <button class="top-tab active" data-pane="delivery" type="button">📦 Image · 360 · Video</button>
-    <button class="top-tab" data-pane="catalog" type="button">📊 Catalog &amp; Website</button>
-    <button class="top-tab" data-pane="asks" type="button">🎯 Asks &amp; Key Initiatives</button>
   </div>
 
   <!-- ═══ DELIVERY TAB ═══ -->
   <div class="tab-pane active" id="pane-delivery">
 
-    <!-- Segment pills -->
-    <div class="seg-bar">
-      <span class="seg-label">View:</span>
-      <button class="seg-pill active" data-seg="all" type="button">All Segments</button>
-      <button class="seg-pill" data-seg="ENT" type="button">Enterprise</button>
-      <button class="seg-pill" data-seg="MID" type="button">Mid-Market</button>
-      <button class="seg-pill" data-seg="SMB" type="button">SMB</button>
-    </div>
-
-
-    <!-- Hero KPIs -->
-    <div class="hero-row">
-      <div class="hero-card dark">
-        <div class="deco"></div><div class="deco2"></div>
-        <div class="hero-lbl">Blended SLA · Image + 360 + Video</div>
-        <div class="hero-val" id="heroSLA">—</div>
-        <div class="hero-sub" id="heroSLASub">blended average</div>
-        <div class="hero-chip neutral" id="heroSLADelta">—</div>
-      </div>
-      <div class="hero-card light">
-        <div class="hero-lbl">Metrics On Track This Period</div>
-        <div class="hero-val" id="heroTrend">—</div>
-        <div class="hero-sub" id="heroTrendSub">of tracked KRs improving</div>
-        <div class="hero-chip neutral" id="heroTrendDelta">—</div>
-      </div>
-      <div class="hero-card light">
-        <div class="hero-lbl">Metrics Improving This Period</div>
-        <div class="hero-val" id="heroImproving">—</div>
-        <div class="hero-sub">out of all tracked KRs</div>
-      </div>
-    </div>
-
-    <!-- All Metrics Trend — 3 product cards, rows=metrics, cols=months -->
-    <div class="trend-wrap" id="trendWrap"></div>
+    <!-- Dashboard: ALL / ENT sections -->
+    <div id="deliveryContent"></div>
 
   </div><!-- /delivery tab -->
+
+  <!-- ═══ MID + SMB TAB ═══ -->
+  <div class="tab-pane" id="pane-mid">
+    <div id="midContent"></div>
+  </div><!-- /mid+smb tab -->
 
   <!-- ═══ CATALOG & WEBSITE TAB ═══ -->
   <div class="tab-pane" id="pane-catalog">
@@ -486,6 +444,14 @@ footer { padding-top:24px; border-top:1px solid var(--border); font-size:11px; c
   <footer>Source: team-maintained ops tracker · figures for the current month are month-to-date where reported</footer>
 </div>
 
+<!-- FOOTER TAB BAR -->
+<nav class="bottom-tabs">
+  <button class="bottom-tab active" data-pane="delivery" type="button">🎨 Studio Create (1/3)</button>
+  <button class="bottom-tab" data-pane="mid" type="button">🏢 MID &amp; SMB</button>
+  <button class="bottom-tab" data-pane="catalog" type="button">📊 Studio Create (2/3)</button>
+  <button class="bottom-tab" data-pane="asks" type="button">🎯 Studio Create (3/3)</button>
+</nav>
+
 <script>
 const MONTHS = ['May','Jun','Jul','Aug'];
 const MONTH_COLS = { Aug:7, Jul:11, Jun:15, May:19 };
@@ -623,8 +589,9 @@ function effectiveLatest(m) {
            priorMo:pi, priorVal:pi ? effectiveVal(m,pi) : null };
 }
 
-// ── HERO ──
-function renderHero() {
+// ── HERO (returns HTML string for a given segment) ──
+function buildHeroHTML(seg, segDef) {
+  const origSeg = currentSeg; currentSeg = seg;
   const prods = DATA.filter(p => p.code !== 'catalog');
   const imgP = DATA.find(p => p.code==='image');
   const vidP = DATA.find(p => p.code==='video');
@@ -635,107 +602,64 @@ function renderHero() {
   const blendSLA = slaVals.length ? slaVals.reduce((a,e)=>a+e.latestVal,0)/slaVals.length : null;
   const blendPrior = slaVals.every(e=>e.priorVal!=null) ? slaVals.reduce((a,e)=>a+e.priorVal,0)/slaVals.length : null;
   const slaDelta = blendSLA!=null && blendPrior!=null ? blendSLA-blendPrior : null;
-  document.getElementById('heroSLA').textContent = blendSLA!=null ? blendSLA.toFixed(1)+'%' : '—';
-  document.getElementById('heroSLASub').textContent = slaVals[0]?.latestMo ? 'Latest: '+slaVals[0].latestMo : 'blended average';
-  const slaDEl = document.getElementById('heroSLADelta');
-  slaDEl.className = 'hero-chip' + (slaDelta!=null ? ' '+good(slaDelta,'up') : ' neutral');
-  slaDEl.textContent = slaDelta!=null ? dfmt(slaDelta,'pct')+' vs prior' : 'No comparison data';
-  // Metrics On Track — % improving this period vs prior period
+  const slaText = blendSLA!=null ? blendSLA.toFixed(1)+'%' : '—';
+  const slaSubText = slaVals[0]?.latestMo ? 'Latest: '+slaVals[0].latestMo : 'blended average';
+  const slaDeltaClass = slaDelta!=null ? good(slaDelta,'up') : 'neutral';
+  const slaDeltaText = slaDelta!=null ? dfmt(slaDelta,'pct')+' vs prior' : 'No comparison data';
+  // Metrics On Track
   let currImproving=0, currTotal=0, prevImproving=0, prevTotal=0;
   prods.forEach(p => p.metrics.forEach(m => {
     const validMos = MONTHS.filter(mo => effectiveVal(m, mo) != null);
     if (validMos.length >= 2) {
-      const latest = validMos[validMos.length-1];
-      const prior  = validMos[validMos.length-2];
+      const latest = validMos[validMos.length-1], prior = validMos[validMos.length-2];
       currTotal++;
       if (good(effectiveVal(m,latest)-effectiveVal(m,prior), m.dir)==='good') currImproving++;
     }
     if (validMos.length >= 3) {
-      const p1 = validMos[validMos.length-2];
-      const p2 = validMos[validMos.length-3];
+      const p1 = validMos[validMos.length-2], p2 = validMos[validMos.length-3];
       prevTotal++;
       if (good(effectiveVal(m,p1)-effectiveVal(m,p2), m.dir)==='good') prevImproving++;
     }
   }));
-  const currPct = currTotal > 0 ? Math.round(currImproving/currTotal*100) : null;
-  const prevPct = prevTotal > 0 ? Math.round(prevImproving/prevTotal*100) : null;
+  const currPct = currTotal>0 ? Math.round(currImproving/currTotal*100) : null;
+  const prevPct = prevTotal>0 ? Math.round(prevImproving/prevTotal*100) : null;
   const trendDelta = currPct!=null && prevPct!=null ? currPct-prevPct : null;
   const trendLatestMo = MONTHS.filter(mo => prods.some(p=>p.metrics.some(m=>effectiveVal(m,mo)!=null))).at(-1);
-  document.getElementById('heroTrend').textContent = currPct!=null ? currPct+'%' : '—';
-  document.getElementById('heroTrendSub').textContent = currImproving+' of '+currTotal+' KRs improving'+(trendLatestMo?' · '+trendLatestMo:'');
-  const trendEl = document.getElementById('heroTrendDelta');
-  trendEl.className = 'hero-chip'+(trendDelta!=null ? ' '+good(trendDelta,'up') : ' neutral');
-  trendEl.textContent = trendDelta!=null ? (trendDelta>=0?'+':'')+trendDelta+'pp vs prior period' : 'No comparison data';
-  // Improving count (delivery products only)
-  let improving=0, slipping=0, tracked=0;
+  const trendDeltaClass = trendDelta!=null ? good(trendDelta,'up') : 'neutral';
+  const trendDeltaText = trendDelta!=null ? (trendDelta>=0?'+':'')+trendDelta+'pp vs prior period' : 'No comparison data';
+  // Improving count
+  let improving=0, tracked=0;
   prods.forEach(p => p.metrics.forEach(m => {
     const e = effectiveLatest(m);
-    if (e.latestVal!=null) {
-      tracked++;
-      if (e.priorVal!=null) {
-        const g = good(e.latestVal-e.priorVal, m.dir);
-        if (g==='good') improving++;
-        else if (g==='bad') slipping++;
-      }
-    }
+    if (e.latestVal!=null) { tracked++; if (e.priorVal!=null && good(e.latestVal-e.priorVal,m.dir)==='good') improving++; }
   }));
-  document.getElementById('heroImproving').textContent = improving+'/'+tracked;
+  currentSeg = origSeg;
+  return `<div class="hero-row">
+    <div class="hero-card dark">
+      <div class="deco"></div><div class="deco2"></div>
+      <div class="hero-lbl">Blended SLA · Image + 360 + Video</div>
+      <div class="hero-val">${slaText}</div>
+      <div class="hero-sub">${slaSubText}</div>
+      <div class="hero-chip ${slaDeltaClass}">${slaDeltaText}</div>
+    </div>
+    <div class="hero-card light">
+      <div class="hero-lbl">Metrics On Track This Period</div>
+      <div class="hero-val">${currPct!=null ? currPct+'%' : '—'}</div>
+      <div class="hero-sub">${currImproving} of ${currTotal} KRs improving${trendLatestMo?' · '+trendLatestMo:''}</div>
+      <div class="hero-chip ${trendDeltaClass}">${trendDeltaText}</div>
+    </div>
+    <div class="hero-card light">
+      <div class="hero-lbl">Metrics Improving This Period</div>
+      <div class="hero-val">${improving}/${tracked}</div>
+      <div class="hero-sub">out of all tracked KRs</div>
+    </div>
+  </div>`;
 }
 
-// ── SNAPSHOT ──
-function renderSnapshot() {
+// ── TREND TABLES (returns HTML string for a given segment) ──
+function buildTrendHTML(seg, segDef) {
+  const origSeg = currentSeg; currentSeg = seg;
   const prods = DATA.filter(p => p.code !== 'catalog');
-  let latestPeriod = null;
-  prods.forEach(p => p.metrics.forEach(m => {
-    const e = effectiveLatest(m);
-    if (e.latestMo && (!latestPeriod || MONTHS.indexOf(e.latestMo)>MONTHS.indexOf(latestPeriod))) latestPeriod = e.latestMo;
-  }));
-  document.getElementById('snapshotPeriod').textContent = latestPeriod ? 'Latest: '+latestPeriod : '';
-  // Canonical slot order so every card has the same rows in the same order
-  const SNAP_SLOTS = [
-    { label:'TAT (P95)', matcher: m=>m.name.includes('P95') },
-    { label:'TAT (P99)', matcher: m=>m.name.includes('P99') },
-    { label:'SLA',       matcher: m=>m.name.toUpperCase().includes('SLA') },
-    { label:'P&L Cost%', matcher: m=>m.name.includes('P&L')||m.name.toLowerCase().includes('cost') },
-    { label:'Fulfilment',matcher: m=>/fulfi/i.test(m.name) },
-  ];
-  document.getElementById('snapshotGrid').innerHTML = prods.map(prod => {
-    const rows = SNAP_SLOTS.map(slot => {
-      const m = prod.metrics.find(slot.matcher);
-      if (!m) {
-        return `<tr>
-          <td class="ss-td-name empty">${slot.label}</td>
-          <td class="ss-td-val no-data">—</td>
-          <td class="ss-td-delta"><span class="mrow-delta none">—</span></td>
-        </tr>`;
-      }
-      const e = effectiveLatest(m);
-      const delta = e.latestVal!=null && e.priorVal!=null ? e.latestVal-e.priorVal : null;
-      const g = delta!=null ? good(delta,m.dir) : 'none';
-      return `<tr>
-        <td class="ss-td-name">${m.name}</td>
-        <td class="ss-td-val">${e.latestVal!=null ? fmt(e.latestVal,m.type) : '<span class="no-data">—</span>'}</td>
-        <td class="ss-td-delta"><span class="mrow-delta ${g}">${delta!=null?dfmt(delta,m.type):'—'}</span></td>
-      </tr>`;
-    }).join('');
-    return `<div class="prod-card">
-      <div class="prod-card-hdr">
-        <span class="prod-dot" style="background:${prod.color}"></span>
-        <div><div class="prod-name">${prod.name}</div><div class="prod-owner">${prod.owner}</div></div>
-      </div>
-      <table class="ss-table">
-        <colgroup><col style="width:36%"><col style="width:40%"><col style="width:24%"></colgroup>
-        <tbody>${rows}</tbody>
-      </table>
-    </div>`;
-  }).join('');
-}
-
-// ── TREND TABLES: 3 product cards, rows = metrics, cols = months ──
-function renderTrend() {
-  const prods = DATA.filter(p => p.code !== 'catalog');
-
-  // Canonical metric slot order: each slot has a matcher + label + type + dir
   const SLOTS = [
     { label:'TAT (P95)', short:'P95',  matcher: m=>m.name.includes('P95'), type:'hrs', dir:'down' },
     { label:'TAT (P99)', short:'P99',  matcher: m=>m.name.includes('P99'), type:'hrs', dir:'down' },
@@ -743,43 +667,26 @@ function renderTrend() {
     { label:'P&L Cost%', short:'P&L',  matcher: m=>m.name.includes('P&L')||m.name.toLowerCase().includes('cost'), type:'pct', dir:'down' },
     { label:'Fulfilment',short:'Ful.', matcher: m=>/fulfi/i.test(m.name), type:'pct', dir:'up' },
   ];
-
-  // Months that have any data across all delivery products
   const displayMonths = MONTHS.filter(mo =>
     prods.some(prod => prod.metrics.some(m => effectiveVal(m, mo) != null))
   );
-
-  // Fixed column widths: metric col 36%, remaining split equally among months
   const metricColPct = 36;
   const moPct = ((100 - metricColPct) / displayMonths.length).toFixed(2);
   const colgroup = `<colgroup>
     <col style="width:${metricColPct}%">
     ${displayMonths.map(() => `<col style="width:${moPct}%">`).join('')}
   </colgroup>`;
-
-  // One card per product
   const html = prods.map(prod => {
-    // month-column headers
-    const monthHeaders = displayMonths.map(mo =>
-      `<th>${mo}</th>`
-    ).join('');
-
-    // one row per metric slot — always render all SLOTS so row count is identical across cards
+    const monthHeaders = displayMonths.map(mo => `<th>${mo}</th>`).join('');
     const rows = SLOTS.map(slot => {
       const m = prod.metrics.find(slot.matcher);
-
-      // Always emit a row even if no data, so row heights align across cards
       if (!m) {
         const emptyCells = displayMonths.map(() => `<td>—</td>`).join('');
         return `<tr class="stripe-neutral"><td>${slot.label}</td>${emptyCells}</tr>`;
       }
-
-      // Determine overall trend stripe
       const e = effectiveLatest(m);
       const latestDelta = (e.latestVal != null && e.priorVal != null) ? e.latestVal - e.priorVal : null;
       const overallG = latestDelta != null ? good(latestDelta, slot.dir) : 'neutral';
-      const stripeClass = 'stripe-' + overallG;
-
       const cells = displayMonths.map((mo, moIdx) => {
         const val = effectiveVal(m, mo);
         const prevVal = moIdx > 0 ? effectiveVal(m, displayMonths[moIdx-1]) : null;
@@ -789,17 +696,23 @@ function renderTrend() {
         const isLatest = mo === displayMonths[displayMonths.length - 1];
         return `<td class="${[g, isLatest?'latest':''].filter(Boolean).join(' ')}">${fmt(val, slot.type)}</td>`;
       }).join('');
-
-      return `<tr class="${stripeClass}"><td>${slot.label}</td>${cells}</tr>`;
+      return `<tr class="stripe-${overallG}"><td>${slot.label}</td>${cells}</tr>`;
     }).join('');
-
+    // Current-month SLA for this product + segment
+    const slaM = prod.metrics.find(m => m.name.toUpperCase().includes('SLA'));
+    const slaE = slaM ? effectiveLatest(slaM) : null;
+    const slaBadge = slaE && slaE.latestVal != null
+      ? `<span class="trend-sla-badge">SLA ${slaE.latestVal.toFixed(1)}%</span>` : '';
     return `<div class="trend-card">
       <div class="trend-card-hdr">
-        <span class="prod-dot" style="background:${prod.color}"></span>
-        <div>
-          <div class="prod-name">${prod.name}</div>
-          <div class="prod-owner">${prod.owner}</div>
+        <div class="trend-card-hdr-left">
+          <span class="prod-dot" style="background:${prod.color}"></span>
+          <div>
+            <div class="prod-name">${prod.name}</div>
+            <div class="prod-owner">${prod.owner}</div>
+          </div>
         </div>
+        ${slaBadge}
       </div>
       <table class="tt">
         ${colgroup}
@@ -808,9 +721,28 @@ function renderTrend() {
       </table>
     </div>`;
   }).join('');
-
-  document.getElementById('trendWrap').innerHTML = html;
+  currentSeg = origSeg;
+  const badgeRow = segDef ? `<div class="seg-trend-label"><span class="seg-badge" style="background:${segDef.color}">${segDef.label}</span></div>` : '';
+  return `${badgeRow}<div class="trend-wrap">${html}</div>`;
 }
+
+/// ── SEGMENT DEFINITIONS ──
+const SEG_ALL = { key:'all', label:'ALL', title:'All Segments', color:'var(--purple)' };
+const SEG_ENT = { key:'ENT', label:'ENT', title:'Enterprise',   color:'#0891B2' };
+const SEG_MID = { key:'MID', label:'MID', title:'Mid-Market',   color:'#059669' };
+const SEG_SMB = { key:'SMB', label:'SMB', title:'SMB',          color:'#D97706' };
+
+function buildSegSections(defs, containerId) {
+  const html = defs.map(def => `
+    <div class="seg-section">
+      ${buildTrendHTML(def.key, def)}
+    </div>
+  `).join('');
+  document.getElementById(containerId).innerHTML = html;
+}
+
+function renderDelivery() { buildSegSections([SEG_ALL, SEG_ENT], 'deliveryContent'); }
+function renderMid()      { buildSegSections([SEG_MID, SEG_SMB], 'midContent'); }
 
 // ── CATALOG ──
 function renderCatalog() {
@@ -936,29 +868,31 @@ function renderCatalog() {
 
 // ── FULL RENDER ──
 function renderAll() {
-  renderHero();
-  renderTrend();
+  renderDelivery();
+  renderMid();
   renderCatalog();
 }
 
-// ── TOP TABS ──
-document.querySelectorAll('.top-tab').forEach(btn => {
+// ── BOTTOM TABS ──
+document.querySelectorAll('.bottom-tab').forEach(btn => {
   btn.addEventListener('click', () => {
-    document.querySelectorAll('.top-tab').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.bottom-tab').forEach(b=>b.classList.remove('active'));
     document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById('pane-'+btn.dataset.pane).classList.add('active');
+    window.scrollTo({top:0, behavior:'smooth'});
+    const titles = {
+      delivery: { title:'Studio Create (1/3)' },
+      mid:      { title:'Studio Create · MID & SMB' },
+      catalog:  { title:'Studio Create (2/3)' },
+      asks:     { title:'Studio Create (3/3)' },
+    };
+    const t = titles[btn.dataset.pane];
+    if (t) { document.getElementById('pageTitle').textContent = t.title; }
   });
 });
 
-// ── SEGMENT PILLS ──
-document.getElementById('pane-delivery').addEventListener('click', e => {
-  const pill = e.target.closest('.seg-pill');
-  if (!pill) return;
-  currentSeg = pill.dataset.seg;
-  document.querySelectorAll('.seg-pill').forEach(b=>b.classList.toggle('active',b===pill));
-  renderAll();
-});
+// (segment pills removed — delivery now renders all segments as dashboard sections)
 
 // ── CSV PARSING + REFRESH ──
 function parseCSV(text) {
