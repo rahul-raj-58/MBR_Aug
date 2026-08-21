@@ -854,7 +854,7 @@ function buildCatalogSegHTML(seg, segDef) {
   const cardsHTML = cat.metrics.map(buildMetricCard).join('');
   currentSeg = origSeg;
   const badgeRow = segDef ? `<div class="seg-trend-label"><span class="seg-badge" style="background:${segDef.color}">${segDef.label}</span></div>` : '';
-  return `${badgeRow}<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;">${cardsHTML}</div>`;
+  return `${badgeRow}<div style="display:flex;flex-direction:column;gap:16px;">${cardsHTML}</div>`;
 }
 
 function renderCatalog() {
