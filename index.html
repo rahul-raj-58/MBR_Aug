@@ -177,30 +177,31 @@ table.tt tr.stripe-neutral td:first-child { border-left-color:var(--border); }
 @media(max-width:900px){ .cat-body { grid-template-columns:1fr; } .seg-trend-grid { grid-template-columns:1fr; } }
 
 /* ── ASKS & KEY INITIATIVES TAB ── */
-.asks-list { display:flex; flex-direction:column; gap:20px; }
-.asks-card { background:var(--card); border-radius:16px; box-shadow:var(--shadow-md); overflow:hidden; border:1px solid var(--border); }
-.asks-card-hdr { display:flex; align-items:center; justify-content:space-between; padding:14px 22px 13px; border-bottom:1px solid var(--border); background:var(--row-alt); }
-.asks-product-badge { display:flex; align-items:center; gap:10px; }
-.asks-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+.asks-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; }
+.asks-card { background:var(--card); border-radius:16px; box-shadow:var(--shadow-md); overflow:hidden; border:1px solid var(--border); display:flex; flex-direction:column; }
+.asks-card-hdr { display:flex; align-items:center; justify-content:space-between; padding:13px 18px 11px; border-bottom:1px solid var(--border); background:var(--row-alt); flex-shrink:0; }
+.asks-product-badge { display:flex; align-items:center; gap:8px; }
+.asks-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
 .asks-pl-label { font-size:10px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--text-muted); }
-.asks-pl-name { font-size:22px; font-weight:800; line-height:1; }
-.asks-summary { font-size:12px; color:var(--text-muted); font-weight:500; }
-.asks-body { display:grid; grid-template-columns:1fr 1fr; }
-.asks-col-asks { padding:20px 24px 26px; background:#fff; border-right:1px solid var(--border); }
-.asks-col-ki { padding:20px 24px 26px; background:#FFFBEF; }
-.asks-col-hdr { display:flex; align-items:center; gap:8px; margin-bottom:16px; }
-.asks-icon { font-size:10px; font-weight:800; color:#fff; border-radius:7px; padding:4px 8px; letter-spacing:.04em; }
+.asks-pl-name { font-size:19px; font-weight:800; line-height:1; }
+.asks-summary { font-size:11px; color:var(--text-muted); font-weight:500; white-space:nowrap; }
+.asks-body { display:flex; flex-direction:column; flex:1; }
+.asks-col-asks { padding:16px 18px 18px; background:#fff; border-bottom:1px solid var(--border); }
+.asks-col-ki { padding:16px 18px 18px; background:#FFFBEF; flex:1; }
+.asks-col-hdr { display:flex; align-items:center; gap:7px; margin-bottom:12px; }
+.asks-icon { font-size:10px; font-weight:800; color:#fff; border-radius:6px; padding:3px 7px; letter-spacing:.04em; }
 .asks-icon-as { background:var(--purple); }
 .asks-icon-ki { background:#D97706; }
-.asks-col-title { font-size:14px; font-weight:700; color:var(--text); }
-.asks-badge { font-size:11px; font-weight:700; padding:2px 9px; border-radius:100px; margin-left:auto; }
+.asks-col-title { font-size:13px; font-weight:700; color:var(--text); }
+.asks-badge { font-size:11px; font-weight:700; padding:2px 8px; border-radius:100px; margin-left:auto; }
 .asks-badge-as { background:#EDE9FE; color:var(--purple); }
 .asks-badge-ki { background:#FEF3C7; color:#92400E; }
-.asks-items { list-style:none; padding:0; display:flex; flex-direction:column; gap:11px; }
-.asks-items li { font-size:13px; line-height:1.6; color:var(--text); padding-left:18px; position:relative; }
-.asks-items li::before { content:'•'; position:absolute; left:0; top:0; color:var(--text-muted); font-weight:700; font-size:15px; line-height:1.35; }
+.asks-items { list-style:none; padding:0; display:flex; flex-direction:column; gap:9px; }
+.asks-items li { font-size:12.5px; line-height:1.6; color:var(--text); padding-left:16px; position:relative; }
+.asks-items li::before { content:'•'; position:absolute; left:0; top:0; color:var(--text-muted); font-weight:700; font-size:14px; line-height:1.35; }
 .asks-items li strong { font-weight:700; }
-@media(max-width:900px){ .asks-body { grid-template-columns:1fr; } .asks-col-asks { border-right:none; border-bottom:1px solid var(--border); } }
+@media(max-width:1100px){ .asks-grid { grid-template-columns:repeat(2,1fr); } }
+@media(max-width:700px){ .asks-grid { grid-template-columns:1fr; } }
 
 /* ── FOOTER ── */
 footer { padding-top:24px; border-top:1px solid var(--border); font-size:11px; color:var(--text-muted); text-align:center; margin-top:8px; }
@@ -312,7 +313,7 @@ footer { padding-top:24px; border-top:1px solid var(--border); font-size:11px; c
 
   <!-- ═══ ASKS & KEY INITIATIVES TAB ═══ -->
   <div class="tab-pane" id="pane-asks">
-    <div class="asks-list">
+    <div class="asks-grid">
 
       <!-- ── IMAGE ── -->
       <div class="asks-card" style="border-top:3px solid #7C3AED">
@@ -496,7 +497,7 @@ footer { padding-top:24px; border-top:1px solid var(--border); font-size:11px; c
         </div>
       </div>
 
-    </div><!-- /asks-list -->
+    </div><!-- /asks-grid -->
   </div><!-- /asks tab -->
 
   <footer>Source: team-maintained ops tracker · figures for the current month are month-to-date where reported</footer>
