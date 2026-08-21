@@ -143,7 +143,7 @@ table.tt tr.stripe-neutral td:first-child { border-left-color:var(--border); }
 
 /* ── CATALOG TAB ── */
 /* Each metric gets its own full-width section */
-.cat-section { margin-bottom:36px; }
+.cat-section { margin-bottom:0; }
 .cat-section-hdr {
   display:flex; align-items:baseline; justify-content:space-between;
   padding-bottom:12px; border-bottom:2px solid var(--purple-soft); margin-bottom:18px;
@@ -858,7 +858,7 @@ function renderCatalog() {
       <table class="tt" style="table-layout:fixed;">${catColgroup(dataMos.length)}
         <thead><tr><th></th>${moHeaders}</tr></thead>
         <tbody>
-          <tr class="stripe-${g}"><td>Value</td>${valCells}</tr>
+          <tr class="stripe-${g}"><td>${m.name}</td>${valCells}</tr>
           <tr><td style="color:var(--text-muted);">vs Prior</td>${deltaCells}</tr>
         </tbody>
       </table>
@@ -913,7 +913,7 @@ function renderCatalog() {
       <div class="cat-section-hdr">
         <div class="cat-section-title">
           <span class="cat-section-dot" style="background:#059669"></span>
-          ${m.name}
+          ${m.name === 'Live Accounts' ? 'Catalog' : m.name}
         </div>
         <div class="cat-section-kpi">
           ${e.latestVal!=null ? `<span class="cat-kpi-val">${fmt(e.latestVal,m.type)}</span>` : ''}
@@ -926,7 +926,8 @@ function renderCatalog() {
     </div>`;
   }).join('');
 
-  document.getElementById('catalogSections').innerHTML = html;
+  document.getElementById('catalogSections').innerHTML =
+    `<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start;">${html}</div>`;
 }
 
 // ── FULL RENDER ──
