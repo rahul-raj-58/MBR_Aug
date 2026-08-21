@@ -142,12 +142,39 @@ table.tt tr.stripe-bad  td:first-child { border-left-color:var(--bad); }
 table.tt tr.stripe-neutral td:first-child { border-left-color:var(--border); }
 
 /* ── CATALOG TAB ── */
-.catalog-hero { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:28px; max-width:700px; }
-.cat-stat { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:22px 24px; box-shadow:var(--shadow); }
-.cat-stat-lbl { font-size:10px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px; }
-.cat-stat-val { font-size:38px; font-weight:800; color:var(--text); line-height:1; margin-bottom:4px; }
-.cat-stat-sub { font-size:11px; color:var(--text-muted); }
-.catalog-trend-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; max-width:700px; }
+/* Each metric gets its own full-width section */
+.cat-section { margin-bottom:36px; }
+.cat-section-hdr {
+  display:flex; align-items:baseline; justify-content:space-between;
+  padding-bottom:12px; border-bottom:2px solid var(--purple-soft); margin-bottom:18px;
+}
+.cat-section-title {
+  font-size:20px; font-weight:800; color:var(--text);
+  display:flex; align-items:center; gap:10px;
+}
+.cat-section-dot { width:12px; height:12px; border-radius:50%; flex-shrink:0; }
+.cat-section-kpi { display:flex; align-items:baseline; gap:8px; }
+.cat-kpi-val { font-size:28px; font-weight:800; color:var(--text); }
+.cat-kpi-period { font-size:12px; color:var(--text-muted); }
+.cat-kpi-delta { font-size:11px; font-weight:600; padding:3px 9px; border-radius:100px; }
+.cat-kpi-delta.good { background:var(--good-bg); color:var(--good); }
+.cat-kpi-delta.bad  { background:var(--bad-bg);  color:var(--bad); }
+.cat-kpi-delta.neutral { background:var(--neutral-bg); color:var(--neutral); }
+/* Two-column layout: monthly trend left, segment trend right */
+.cat-body { display:grid; grid-template-columns:320px 1fr; gap:16px; align-items:start; }
+/* Segment trend: 3 cards side by side */
+.seg-trend-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+.seg-trend-card {
+  background:var(--card); border:1px solid var(--border); border-radius:12px;
+  overflow:hidden; box-shadow:var(--shadow);
+}
+.seg-trend-hdr {
+  padding:10px 14px 8px; border-bottom:1px solid var(--border);
+  font-size:11px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--purple-mid); background:var(--row-alt);
+}
+.seg-empty { padding:16px 14px; font-size:11px; color:var(--text-muted); font-style:italic; }
+@media(max-width:900px){ .cat-body { grid-template-columns:1fr; } .seg-trend-grid { grid-template-columns:1fr; } }
 
 /* ── FOOTER ── */
 footer { padding-top:24px; border-top:1px solid var(--border); font-size:11px; color:var(--text-muted); text-align:center; margin-top:8px; }
@@ -159,7 +186,7 @@ footer { padding-top:24px; border-top:1px solid var(--border); font-size:11px; c
 }
 @media(max-width:640px){
   .page { padding:20px 16px 40px; }
-  .hero-row,.snapshot-grid,.trend-wrap,.catalog-hero,.catalog-trend-grid { grid-template-columns:1fr; }
+  .hero-row,.snapshot-grid,.trend-wrap { grid-template-columns:1fr; }
 }
 </style>
 </head>
@@ -186,7 +213,7 @@ footer { padding-top:24px; border-top:1px solid var(--border); font-size:11px; c
   <!-- TOP-LEVEL TABS -->
   <div class="top-tabs">
     <button class="top-tab active" data-pane="delivery" type="button">📦 Image · 360 · Video</button>
-    <button class="top-tab" data-pane="catalog" type="button">🗂 Catalog</button>
+    <button class="top-tab" data-pane="catalog" type="button">📊 Catalog &amp; Website</button>
   </div>
 
   <!-- ═══ DELIVERY TAB ═══ -->
@@ -251,18 +278,9 @@ footer { padding-top:24px; border-top:1px solid var(--border); font-size:11px; c
 
   </div><!-- /delivery tab -->
 
-  <!-- ═══ CATALOG TAB ═══ -->
+  <!-- ═══ CATALOG & WEBSITE TAB ═══ -->
   <div class="tab-pane" id="pane-catalog">
-    <div class="sec-hdr" style="margin-top:4px;">
-      <div class="sec-title">Catalog — Growth Metrics</div>
-      <div class="sec-note">Live Accounts &amp; Website Reviews</div>
-    </div>
-    <div class="catalog-hero" id="catalogHero"></div>
-    <div class="sec-hdr">
-      <div class="sec-title">Month-wise Trend</div>
-      <div class="sec-note">May → Jul</div>
-    </div>
-    <div class="catalog-trend-grid" id="catalogTrend"></div>
+    <div id="catalogSections"></div>
   </div><!-- /catalog tab -->
 
   <footer>Source: team-maintained ops tracker · figures for the current month are month-to-date where reported</footer>
@@ -577,37 +595,121 @@ function renderTrend() {
 function renderCatalog() {
   const cat = DATA.find(p=>p.code==='catalog');
   if (!cat) return;
-  // Hero stats (latest values)
-  document.getElementById('catalogHero').innerHTML = cat.metrics.map(m => {
+  const SEGS = ['ENT','MID','SMB'];
+
+  // Shared helper: build a <colgroup> for a table with a label col + N month cols
+  function catColgroup(nMo) {
+    const labelPct = 22;
+    const moPct = ((100 - labelPct) / nMo).toFixed(2);
+    return `<colgroup><col style="width:${labelPct}%">${Array(nMo).fill(`<col style="width:${moPct}%">`).join('')}</colgroup>`;
+  }
+
+  const html = cat.metrics.map(m => {
     const e = latestPrior(m.monthly);
     const delta = e.latestVal!=null && e.priorVal!=null ? e.latestVal-e.priorVal : null;
     const g = delta!=null ? good(delta,m.dir) : 'neutral';
-    return `<div class="cat-stat">
-      <div class="cat-stat-lbl">${m.name}</div>
-      <div class="cat-stat-val">${fmt(e.latestVal,m.type)}</div>
-      <div class="cat-stat-sub">${e.latestMo||'—'}${delta!=null?` · <span style="color:var(--${g})">${dfmt(delta,m.type)} vs ${e.priorMo}</span>`:''}</div>
+
+    // Months that have data — used as column headers in both tables
+    const dataMos = MONTHS.filter(mo => m.monthly[mo]!=null);
+
+    // ── Monthly trend table: rows = [Value, vs Prior], cols = months ──
+    const moHeaders = dataMos.map(mo => `<th>${mo}</th>`).join('');
+
+    // Value row
+    const valCells = dataMos.map((mo, i) => {
+      const val = m.monthly[mo];
+      const prev = i > 0 ? m.monthly[dataMos[i-1]] : null;
+      const d = prev!=null ? val-prev : null;
+      const gc = d!=null ? good(d,m.dir) : '';
+      const isLatest = i === dataMos.length-1;
+      return `<td class="${[gc, isLatest?'latest':''].filter(Boolean).join(' ')}">${fmt(val,m.type)}</td>`;
+    }).join('');
+
+    // Delta row
+    const deltaCells = dataMos.map((mo, i) => {
+      const val = m.monthly[mo];
+      const prev = i > 0 ? m.monthly[dataMos[i-1]] : null;
+      const d = prev!=null ? val-prev : null;
+      const gc = d!=null ? good(d,m.dir) : '';
+      return `<td class="${gc}" style="font-size:11px">${d!=null ? dfmt(d,m.type) : '—'}</td>`;
+    }).join('');
+
+    const monthlyTable = `<div class="trend-card" style="margin-bottom:14px;">
+      <div style="padding:9px 14px 8px;border-bottom:1px solid var(--border);background:var(--row-alt);">
+        <span style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--purple-mid);">Monthly Trend</span>
+      </div>
+      <table class="tt" style="table-layout:fixed;">${catColgroup(dataMos.length)}
+        <thead><tr><th></th>${moHeaders}</tr></thead>
+        <tbody>
+          <tr class="stripe-${g}"><td>Value</td>${valCells}</tr>
+          <tr><td style="color:var(--text-muted);">vs Prior</td>${deltaCells}</tr>
+        </tbody>
+      </table>
+    </div>`;
+
+    // ── Segment trend table: rows = ENT/MID/SMB, cols = months ──
+    const hasSeg = m.seg && Object.keys(m.seg).length > 0;
+    // find months with any seg data
+    const segMos = hasSeg ? MONTHS.filter(mo => m.seg[mo] && SEGS.some(s => m.seg[mo][s]!=null)) : [];
+
+    let segTable;
+    if (!hasSeg || !segMos.length) {
+      segTable = `<div class="trend-card">
+        <div style="padding:9px 14px 8px;border-bottom:1px solid var(--border);background:var(--row-alt);">
+          <span style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--purple-mid);">Customer Segment Trend</span>
+        </div>
+        <div class="seg-empty">Segment-level data not yet tracked for this metric. Will populate automatically on refresh once reported in the sheet.</div>
+      </div>`;
+    } else {
+      const segMoHeaders = segMos.map(mo => `<th>${mo}</th>`).join('');
+      const segRows = SEGS.map(seg => {
+        const cells = segMos.map((mo, i) => {
+          const val = m.seg[mo] ? m.seg[mo][seg] : null;
+          const prev = i > 0 && m.seg[segMos[i-1]] ? m.seg[segMos[i-1]][seg] : null;
+          if (val == null) return `<td>—</td>`;
+          const d = prev!=null ? val-prev : null;
+          const gc = d!=null ? good(d,m.dir) : '';
+          const isLatest = i === segMos.length-1;
+          return `<td class="${[gc, isLatest?'latest':''].filter(Boolean).join(' ')}">${fmt(val,m.type)}</td>`;
+        }).join('');
+        // stripe based on last available delta for this seg
+        const lastIdx = segMos.length-1;
+        const lv = m.seg[segMos[lastIdx]]?.[seg];
+        const pv = lastIdx > 0 ? m.seg[segMos[lastIdx-1]]?.[seg] : null;
+        const sd = lv!=null && pv!=null ? lv-pv : null;
+        const sg = sd!=null ? good(sd,m.dir) : 'neutral';
+        return `<tr class="stripe-${sg}"><td>${seg}</td>${cells}</tr>`;
+      }).join('');
+
+      segTable = `<div class="trend-card">
+        <div style="padding:9px 14px 8px;border-bottom:1px solid var(--border);background:var(--row-alt);">
+          <span style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--purple-mid);">Customer Segment Trend</span>
+        </div>
+        <table class="tt" style="table-layout:fixed;">${catColgroup(segMos.length)}
+          <thead><tr><th>Segment</th>${segMoHeaders}</tr></thead>
+          <tbody>${segRows}</tbody>
+        </table>
+      </div>`;
+    }
+
+    return `<div class="cat-section">
+      <div class="cat-section-hdr">
+        <div class="cat-section-title">
+          <span class="cat-section-dot" style="background:#059669"></span>
+          ${m.name}
+        </div>
+        <div class="cat-section-kpi">
+          ${e.latestVal!=null ? `<span class="cat-kpi-val">${fmt(e.latestVal,m.type)}</span>` : ''}
+          ${e.latestMo ? `<span class="cat-kpi-period">${e.latestMo}</span>` : ''}
+          ${delta!=null ? `<span class="cat-kpi-delta ${g}">${dfmt(delta,m.type)} vs ${e.priorMo}</span>` : ''}
+        </div>
+      </div>
+      ${monthlyTable}
+      ${segTable}
     </div>`;
   }).join('');
 
-  // Month trend tables
-  document.getElementById('catalogTrend').innerHTML = cat.metrics.map(m => {
-    const validMos = MONTHS.filter(mo=>m.monthly[mo]!=null);
-    const rows = validMos.map((mo,i) => {
-      const val = m.monthly[mo];
-      const prev = i>0 ? m.monthly[validMos[i-1]] : null;
-      const delta = prev!=null ? val-prev : null;
-      const g = delta!=null ? good(delta,m.dir) : '';
-      const isLatest = i===validMos.length-1;
-      return `<tr><td>${mo}</td><td class="${g}${isLatest?' latest':''}">${fmt(val,m.type)}</td>${delta!=null?`<td class="${g}" style="font-size:11px">${dfmt(delta,m.type)}</td>`:'<td></td>'}</tr>`;
-    }).join('');
-    return `<div class="trend-card">
-      <div class="trend-card-title">${m.name}</div>
-      <table class="tt">
-        <thead><tr><th>Month</th><th>Value</th><th>vs Prior</th></tr></thead>
-        <tbody>${rows}</tbody>
-      </table>
-    </div>`;
-  }).join('');
+  document.getElementById('catalogSections').innerHTML = html;
 }
 
 // ── FULL RENDER ──
