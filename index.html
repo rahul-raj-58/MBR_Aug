@@ -70,7 +70,7 @@ body { font-family:'Inter',system-ui,sans-serif; background:var(--bg); color:var
 .banner-sep { width:1px; height:14px; background:var(--border); margin:0 4px; }
 
 /* ── HERO CARDS ── */
-.hero-row { display:grid; grid-template-columns:1.1fr 1fr 1fr; gap:14px; margin-bottom:32px; }
+.hero-row { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:32px; }
 .hero-card { border-radius:16px; padding:24px 26px; box-shadow:var(--shadow-md); position:relative; overflow:hidden; }
 .hero-card.dark { background:linear-gradient(135deg,#2D2581 0%,#4338CA 100%); color:#fff; }
 .hero-card.light { background:var(--card); border:1px solid var(--border); }
@@ -104,17 +104,20 @@ body { font-family:'Inter',system-ui,sans-serif; background:var(--bg); color:var
 .prod-name { font-size:14px; font-weight:700; color:var(--text); }
 .prod-owner { font-size:11px; color:var(--text-muted); margin-top:1px; }
 .prod-metrics { padding:4px 0; }
-/* CSS-grid row: metric name auto | value fixed 72px | delta fixed 76px — locks all 3 cards to identical column positions */
-.mrow { display:grid; grid-template-columns:1fr 72px 76px; align-items:center; padding:7px 16px; border-bottom:1px solid #F4F3FB; gap:0; }
-.mrow:last-child { border-bottom:none; }
-.mrow-name { font-size:11px; color:var(--text-muted); font-weight:500; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.mrow-val { font-size:13px; font-weight:700; color:var(--text); text-align:right; white-space:nowrap; }
-.mrow-delta { font-size:10px; font-weight:600; padding:2px 7px; border-radius:100px; white-space:nowrap; text-align:right; justify-self:end; }
+/* ── SNAPSHOT TABLE — fixed cols matching trend-card proportions below ── */
+.ss-table { width:100%; border-collapse:collapse; table-layout:fixed; }
+.ss-table td { padding:8px 14px; border:none; }
+.ss-td-name { font-size:11px; color:var(--text-muted); font-weight:500; text-align:left; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.ss-td-name.empty { color:var(--border); }
+.ss-td-val  { font-size:13px; font-weight:700; color:var(--text); text-align:right; white-space:nowrap; }
+.ss-td-val.no-data { font-weight:400; color:var(--border); font-style:italic; font-size:11px; }
+.ss-td-delta { text-align:right; padding-right:14px; }
+/* delta chip — reused by snapshot table */
+.mrow-delta { font-size:10px; font-weight:600; padding:2px 7px; border-radius:100px; white-space:nowrap; display:inline-block; }
 .mrow-delta.good { background:var(--good-bg); color:var(--good); }
 .mrow-delta.bad  { background:var(--bad-bg);  color:var(--bad); }
 .mrow-delta.neutral { background:var(--neutral-bg); color:var(--neutral); }
 .mrow-delta.none { color:var(--text-muted); background:none; }
-.no-data { color:var(--border); font-style:italic; font-size:11px; text-align:right; }
 
 /* ── TREND TABLES ── */
 /* 3 product cards side by side; rows = metrics, cols = months */
@@ -281,18 +284,7 @@ footer { padding-top:24px; border-top:1px solid var(--border); font-size:11px; c
       </div>
     </div>
 
-    <!-- Product Snapshot — 3 cols -->
-    <div class="sec-hdr">
-      <div class="sec-title">Product Line Snapshot</div>
-      <div class="sec-note" id="snapshotPeriod">Latest period</div>
-    </div>
-    <div class="snapshot-grid" id="snapshotGrid"></div>
-
     <!-- All Metrics Trend — 3 product cards, rows=metrics, cols=months -->
-    <div class="sec-hdr">
-      <div class="sec-title">Month-wise Trend — All Metrics</div>
-      <div class="sec-note">rows: metrics &nbsp;·&nbsp; columns: May → Aug</div>
-    </div>
     <div class="trend-wrap" id="trendWrap"></div>
 
   </div><!-- /delivery tab -->
@@ -562,7 +554,7 @@ let DATA = [
   {
     code:'catalog', name:'Catalog', owner:'Sumit Rana', color:'#059669',
     metrics:[
-      { id:'D1', name:'Live Accounts', type:'count', dir:'up',
+      { id:'D1', name:'Live Accounts', type:'count', dir:'down',
         monthly:{May:60,Jun:61,Jul:60,Aug:null}, seg:null },
       { id:'D2', name:'Website Reviews', type:'count', dir:'neutral',
         monthly:{May:16500,Jun:302078,Jul:856296,Aug:null}, seg:null },
@@ -711,30 +703,30 @@ function renderSnapshot() {
     const rows = SNAP_SLOTS.map(slot => {
       const m = prod.metrics.find(slot.matcher);
       if (!m) {
-        // Render empty row so all cards have the same row count
-        return `<div class="mrow">
-          <span class="mrow-name" style="color:var(--border)">${slot.label}</span>
-          <span class="mrow-val" style="color:var(--border); font-weight:400">—</span>
-          <span class="mrow-delta none">—</span>
-        </div>`;
+        return `<tr>
+          <td class="ss-td-name empty">${slot.label}</td>
+          <td class="ss-td-val no-data">—</td>
+          <td class="ss-td-delta"><span class="mrow-delta none">—</span></td>
+        </tr>`;
       }
       const e = effectiveLatest(m);
       const delta = e.latestVal!=null && e.priorVal!=null ? e.latestVal-e.priorVal : null;
       const g = delta!=null ? good(delta,m.dir) : 'none';
-      return `<div class="mrow">
-        <span class="mrow-name">${m.name}</span>
-        ${e.latestVal!=null
-          ? `<span class="mrow-val">${fmt(e.latestVal,m.type)}</span>`
-          : `<span class="mrow-val no-data" style="font-weight:400">—</span>`}
-        <span class="mrow-delta ${g}">${delta!=null?dfmt(delta,m.type):'—'}</span>
-      </div>`;
+      return `<tr>
+        <td class="ss-td-name">${m.name}</td>
+        <td class="ss-td-val">${e.latestVal!=null ? fmt(e.latestVal,m.type) : '<span class="no-data">—</span>'}</td>
+        <td class="ss-td-delta"><span class="mrow-delta ${g}">${delta!=null?dfmt(delta,m.type):'—'}</span></td>
+      </tr>`;
     }).join('');
     return `<div class="prod-card">
       <div class="prod-card-hdr">
         <span class="prod-dot" style="background:${prod.color}"></span>
         <div><div class="prod-name">${prod.name}</div><div class="prod-owner">${prod.owner}</div></div>
       </div>
-      <div class="prod-metrics">${rows}</div>
+      <table class="ss-table">
+        <colgroup><col style="width:36%"><col style="width:40%"><col style="width:24%"></colgroup>
+        <tbody>${rows}</tbody>
+      </table>
     </div>`;
   }).join('');
 }
@@ -945,7 +937,6 @@ function renderCatalog() {
 // ── FULL RENDER ──
 function renderAll() {
   renderHero();
-  renderSnapshot();
   renderTrend();
   renderCatalog();
 }
@@ -997,7 +988,7 @@ function classify(name){
   if(n.includes('sla'))return{type:'pct',dir:'up'};
   if(n.includes('p&l')||n.includes('cost'))return{type:'pct',dir:'down'};
   if(n.includes('fulfi'))return{type:'pct',dir:'up'};
-  if(n.includes('live accounts'))return{type:'count',dir:'up'};
+  if(n.includes('live accounts'))return{type:'count',dir:'down'};
   if(n.includes('review'))return{type:'count',dir:'neutral'};
   return{type:'pct',dir:'neutral'};
 }
