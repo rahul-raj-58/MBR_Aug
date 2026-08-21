@@ -176,6 +176,32 @@ table.tt tr.stripe-neutral td:first-child { border-left-color:var(--border); }
 .seg-empty { padding:16px 14px; font-size:11px; color:var(--text-muted); font-style:italic; }
 @media(max-width:900px){ .cat-body { grid-template-columns:1fr; } .seg-trend-grid { grid-template-columns:1fr; } }
 
+/* ── ASKS & KEY INITIATIVES TAB ── */
+.asks-list { display:flex; flex-direction:column; gap:20px; }
+.asks-card { background:var(--card); border-radius:16px; box-shadow:var(--shadow-md); overflow:hidden; border:1px solid var(--border); }
+.asks-card-hdr { display:flex; align-items:center; justify-content:space-between; padding:14px 22px 13px; border-bottom:1px solid var(--border); background:var(--row-alt); }
+.asks-product-badge { display:flex; align-items:center; gap:10px; }
+.asks-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+.asks-pl-label { font-size:10px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--text-muted); }
+.asks-pl-name { font-size:22px; font-weight:800; line-height:1; }
+.asks-summary { font-size:12px; color:var(--text-muted); font-weight:500; }
+.asks-body { display:grid; grid-template-columns:1fr 1fr; }
+.asks-col-asks { padding:20px 24px 26px; background:#fff; border-right:1px solid var(--border); }
+.asks-col-ki { padding:20px 24px 26px; background:#FFFBEF; }
+.asks-col-hdr { display:flex; align-items:center; gap:8px; margin-bottom:16px; }
+.asks-icon { font-size:10px; font-weight:800; color:#fff; border-radius:7px; padding:4px 8px; letter-spacing:.04em; }
+.asks-icon-as { background:var(--purple); }
+.asks-icon-ki { background:#D97706; }
+.asks-col-title { font-size:14px; font-weight:700; color:var(--text); }
+.asks-badge { font-size:11px; font-weight:700; padding:2px 9px; border-radius:100px; margin-left:auto; }
+.asks-badge-as { background:#EDE9FE; color:var(--purple); }
+.asks-badge-ki { background:#FEF3C7; color:#92400E; }
+.asks-items { list-style:none; padding:0; display:flex; flex-direction:column; gap:11px; }
+.asks-items li { font-size:13px; line-height:1.6; color:var(--text); padding-left:18px; position:relative; }
+.asks-items li::before { content:'•'; position:absolute; left:0; top:0; color:var(--text-muted); font-weight:700; font-size:15px; line-height:1.35; }
+.asks-items li strong { font-weight:700; }
+@media(max-width:900px){ .asks-body { grid-template-columns:1fr; } .asks-col-asks { border-right:none; border-bottom:1px solid var(--border); } }
+
 /* ── FOOTER ── */
 footer { padding-top:24px; border-top:1px solid var(--border); font-size:11px; color:var(--text-muted); text-align:center; margin-top:8px; }
 
@@ -214,6 +240,7 @@ footer { padding-top:24px; border-top:1px solid var(--border); font-size:11px; c
   <div class="top-tabs">
     <button class="top-tab active" data-pane="delivery" type="button">📦 Image · 360 · Video</button>
     <button class="top-tab" data-pane="catalog" type="button">📊 Catalog &amp; Website</button>
+    <button class="top-tab" data-pane="asks" type="button">🎯 Asks &amp; Key Initiatives</button>
   </div>
 
   <!-- ═══ DELIVERY TAB ═══ -->
@@ -282,6 +309,195 @@ footer { padding-top:24px; border-top:1px solid var(--border); font-size:11px; c
   <div class="tab-pane" id="pane-catalog">
     <div id="catalogSections"></div>
   </div><!-- /catalog tab -->
+
+  <!-- ═══ ASKS & KEY INITIATIVES TAB ═══ -->
+  <div class="tab-pane" id="pane-asks">
+    <div class="asks-list">
+
+      <!-- ── IMAGE ── -->
+      <div class="asks-card" style="border-top:3px solid #7C3AED">
+        <div class="asks-card-hdr">
+          <div class="asks-product-badge">
+            <span class="asks-dot" style="background:#7C3AED"></span>
+            <span class="asks-pl-label">Product Line</span>
+            <span class="asks-pl-name" style="color:#7C3AED">Images</span>
+          </div>
+          <span class="asks-summary">3 asks &nbsp;·&nbsp; 3 initiatives</span>
+        </div>
+        <div class="asks-body">
+          <div class="asks-col-asks">
+            <div class="asks-col-hdr">
+              <span class="asks-icon asks-icon-as">AS</span>
+              <span class="asks-col-title">Asks</span>
+              <span class="asks-badge asks-badge-as">3</span>
+            </div>
+            <ul class="asks-items">
+              <li>Deployment of <strong>Window QC V2</strong></li>
+              <li><strong>AI deployment</strong> for Focus shot window</li>
+              <li>Recurring <strong>Reprocessing issue</strong> to be resolved</li>
+            </ul>
+          </div>
+          <div class="asks-col-ki">
+            <div class="asks-col-hdr">
+              <span class="asks-icon asks-icon-ki">KI</span>
+              <span class="asks-col-title">Key Initiatives</span>
+              <span class="asks-badge asks-badge-ki">3</span>
+            </div>
+            <ul class="asks-items">
+              <li>Increase <strong>QC audit coverage</strong> to improve QC accuracy.</li>
+              <li>Implement a <strong>5-shift model</strong> to strengthen TAT adherence.</li>
+              <li>Optimize <strong>QC costs</strong> by transitioning to a cost-efficient workforce while maintaining quality standards.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── 360 ── -->
+      <div class="asks-card" style="border-top:3px solid #0891B2">
+        <div class="asks-card-hdr">
+          <div class="asks-product-badge">
+            <span class="asks-dot" style="background:#0891B2"></span>
+            <span class="asks-pl-label">Product Line</span>
+            <span class="asks-pl-name" style="color:#0891B2">360</span>
+          </div>
+          <span class="asks-summary">2 asks &nbsp;·&nbsp; 1 initiative</span>
+        </div>
+        <div class="asks-body">
+          <div class="asks-col-asks">
+            <div class="asks-col-hdr">
+              <span class="asks-icon asks-icon-as">AS</span>
+              <span class="asks-col-title">Asks</span>
+              <span class="asks-badge asks-badge-as">2</span>
+            </div>
+            <ul class="asks-items">
+              <li>Request support to address <strong>SME SKU processing delays</strong> and stuck cases.</li>
+              <li><strong>AI improvement</strong> for Placement &amp; Remove BG issues.</li>
+            </ul>
+          </div>
+          <div class="asks-col-ki">
+            <div class="asks-col-hdr">
+              <span class="asks-icon asks-icon-ki">KI</span>
+              <span class="asks-col-title">Key Initiatives</span>
+              <span class="asks-badge asks-badge-ki">1</span>
+            </div>
+            <ul class="asks-items">
+              <li>Deep investigation on <strong>failed cases</strong> to increase fulfillment %.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── VIDEO ── -->
+      <div class="asks-card" style="border-top:3px solid #D97706">
+        <div class="asks-card-hdr">
+          <div class="asks-product-badge">
+            <span class="asks-dot" style="background:#D97706"></span>
+            <span class="asks-pl-label">Product Line</span>
+            <span class="asks-pl-name" style="color:#D97706">Video</span>
+          </div>
+          <span class="asks-summary">3 asks &nbsp;·&nbsp; 2 initiatives</span>
+        </div>
+        <div class="asks-body">
+          <div class="asks-col-asks">
+            <div class="asks-col-hdr">
+              <span class="asks-icon asks-icon-as">AS</span>
+              <span class="asks-col-title">Asks</span>
+              <span class="asks-badge asks-badge-as">3</span>
+            </div>
+            <ul class="asks-items">
+              <li>Fix <strong>server pipelines</strong> for video processing on tech.</li>
+              <li>Fix the <strong>"Auto Retry Mechanism"</strong> for v1 as well.</li>
+              <li><strong>Video reprocessing</strong> on image add-ons and deletion.</li>
+            </ul>
+          </div>
+          <div class="asks-col-ki">
+            <div class="asks-col-hdr">
+              <span class="asks-icon asks-icon-ki">KI</span>
+              <span class="asks-col-title">Key Initiatives</span>
+              <span class="asks-badge asks-badge-ki">2</span>
+            </div>
+            <ul class="asks-items">
+              <li><strong>Shift and bandwidth optimisation</strong> as per incoming load.</li>
+              <li><strong>New Russ Darrow template</strong> adoption and improve quality.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── CATALOG ── -->
+      <div class="asks-card" style="border-top:3px solid #059669">
+        <div class="asks-card-hdr">
+          <div class="asks-product-badge">
+            <span class="asks-dot" style="background:#059669"></span>
+            <span class="asks-pl-label">Product Line</span>
+            <span class="asks-pl-name" style="color:#059669">Catalog</span>
+          </div>
+          <span class="asks-summary">1 ask &nbsp;·&nbsp; 2 initiatives</span>
+        </div>
+        <div class="asks-body">
+          <div class="asks-col-asks">
+            <div class="asks-col-hdr">
+              <span class="asks-icon asks-icon-as">AS</span>
+              <span class="asks-col-title">Asks</span>
+              <span class="asks-badge asks-badge-as">1</span>
+            </div>
+            <ul class="asks-items">
+              <li><strong>DMS integration</strong> is required for the remaining accounts, and <strong>CSM support</strong> is needed to complete the integration process.</li>
+            </ul>
+          </div>
+          <div class="asks-col-ki">
+            <div class="asks-col-hdr">
+              <span class="asks-icon asks-icon-ki">KI</span>
+              <span class="asks-col-title">Key Initiatives</span>
+              <span class="asks-badge asks-badge-ki">2</span>
+            </div>
+            <ul class="asks-items">
+              <li>Develop <strong>tools and automation</strong> to scrape data at <strong>5X speed</strong> and ensure delivery within 6 hours.</li>
+              <li>Successfully integrate the current accounts and continue working toward <strong>integrating the remaining accounts</strong>.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── WEBSITE REVIEW ── -->
+      <div class="asks-card" style="border-top:3px solid #0D9488">
+        <div class="asks-card-hdr">
+          <div class="asks-product-badge">
+            <span class="asks-dot" style="background:#0D9488"></span>
+            <span class="asks-pl-label">Product Line</span>
+            <span class="asks-pl-name" style="color:#0D9488">Website Review</span>
+          </div>
+          <span class="asks-summary">1 ask &nbsp;·&nbsp; 4 initiatives</span>
+        </div>
+        <div class="asks-body">
+          <div class="asks-col-asks">
+            <div class="asks-col-hdr">
+              <span class="asks-icon asks-icon-as">AS</span>
+              <span class="asks-col-title">Asks</span>
+              <span class="asks-badge asks-badge-as">1</span>
+            </div>
+            <ul class="asks-items">
+              <li>Accurate <strong>website links, Enterprise IDs, and Rooftop IDs</strong> are required from the CSM team to ensure correct data mapping.</li>
+            </ul>
+          </div>
+          <div class="asks-col-ki">
+            <div class="asks-col-hdr">
+              <span class="asks-icon asks-icon-ki">KI</span>
+              <span class="asks-col-title">Key Initiatives</span>
+              <span class="asks-badge asks-badge-ki">4</span>
+            </div>
+            <ul class="asks-items">
+              <li>Website speed increased by <strong>10–15X</strong> through the use of tools and scrapers.</li>
+              <li>Accounts can be <strong>tracked and reviewed more efficiently</strong>, resulting in improved scores.</li>
+              <li><strong>Churn-threat accounts</strong> are identified and resolved faster and in a timely manner.</li>
+              <li>The scraper extracts data within a few minutes, making website reviews <strong>faster, easier, and more efficient</strong>.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /asks-list -->
+  </div><!-- /asks tab -->
 
   <footer>Source: team-maintained ops tracker · figures for the current month are month-to-date where reported</footer>
 </div>
