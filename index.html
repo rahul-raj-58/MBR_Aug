@@ -249,7 +249,7 @@ footer { padding-top:24px; border-top:1px solid var(--border); font-size:11px; c
 
   <!-- ═══ CATALOG & WEBSITE TAB ═══ -->
   <div class="tab-pane" id="pane-catalog">
-    <div id="catalogSections"></div>
+    <div id="catalogSections" style="max-width:780px;"></div>
   </div><!-- /catalog tab -->
 
   <!-- ═══ ASKS & KEY INITIATIVES TAB ═══ -->
@@ -759,7 +759,7 @@ function buildCatalogSegHTML(seg, segDef) {
     const allMos = [...colMos, ...extraMos];
     if (!allMos.length) allMos.push(...MONTHS.filter(mo => m.monthly[mo] != null || true).slice(0,4));
 
-    const labelPct = 34;
+    const labelPct = 28;
     const moPct = ((100 - labelPct) / Math.max(allMos.length, 1)).toFixed(2);
     const colgroup = `<colgroup><col style="width:${labelPct}%">${allMos.map(()=>`<col style="width:${moPct}%">`).join('')}</colgroup>`;
     const monthHeaders = allMos.map(mo => `<th>${mo}</th>`).join('');
