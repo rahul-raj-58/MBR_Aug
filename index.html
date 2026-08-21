@@ -249,7 +249,7 @@ footer { padding-top:24px; border-top:1px solid var(--border); font-size:11px; c
 
   <!-- ═══ CATALOG & WEBSITE TAB ═══ -->
   <div class="tab-pane" id="pane-catalog">
-    <div id="catalogSections" style="max-width:1100px;"></div>
+    <div id="catalogSections"></div>
   </div><!-- /catalog tab -->
 
   <!-- ═══ ASKS & KEY INITIATIVES TAB ═══ -->
@@ -835,9 +835,82 @@ function buildCatalogSegHTML(seg, segDef) {
 
   const pairs = cat.metrics.map(buildMetricCards);
 
-  // Layout: each metric = one row with [Total | Seg] side by side, cards stretch to equal height
-  const layoutHTML = pairs.map(({ totalCard, segCard }) =>
-    `<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:stretch;">${totalCard}${segCard}</div>`
+  // Asks & KI cards (static content, one per metric)
+  const asksCards = [
+    /* Catalog */
+    `<div class="asks-card" style="border-top:3px solid #059669;height:100%;">
+      <div class="asks-card-hdr">
+        <div class="asks-product-badge">
+          <span class="asks-dot" style="background:#059669"></span>
+          <span class="asks-pl-label">Product Line</span>
+          <span class="asks-pl-name" style="color:#059669">Catalog</span>
+        </div>
+        <span class="asks-summary">1 ask &nbsp;·&nbsp; 2 initiatives</span>
+      </div>
+      <div class="asks-body">
+        <div class="asks-col-asks">
+          <div class="asks-col-hdr">
+            <span class="asks-icon asks-icon-as">AS</span>
+            <span class="asks-col-title">Asks</span>
+            <span class="asks-badge asks-badge-as">1</span>
+          </div>
+          <ul class="asks-items">
+            <li><strong>DMS integration</strong> is required for the remaining accounts, and <strong>CSM support</strong> is needed to complete the integration process.</li>
+          </ul>
+        </div>
+        <div class="asks-col-ki">
+          <div class="asks-col-hdr">
+            <span class="asks-icon asks-icon-ki">KI</span>
+            <span class="asks-col-title">Key Initiatives</span>
+            <span class="asks-badge asks-badge-ki">2</span>
+          </div>
+          <ul class="asks-items">
+            <li>Develop <strong>tools and automation</strong> to scrape data at <strong>5X speed</strong> and ensure delivery within 6 hours.</li>
+            <li>Successfully integrate the current accounts and continue working toward <strong>integrating the remaining accounts</strong>.</li>
+          </ul>
+        </div>
+      </div>
+    </div>`,
+    /* Website Reviews */
+    `<div class="asks-card" style="border-top:3px solid #0D9488;height:100%;">
+      <div class="asks-card-hdr">
+        <div class="asks-product-badge">
+          <span class="asks-dot" style="background:#0D9488"></span>
+          <span class="asks-pl-label">Product Line</span>
+          <span class="asks-pl-name" style="color:#0D9488">Website Review</span>
+        </div>
+        <span class="asks-summary">1 ask &nbsp;·&nbsp; 3 initiatives</span>
+      </div>
+      <div class="asks-body">
+        <div class="asks-col-asks">
+          <div class="asks-col-hdr">
+            <span class="asks-icon asks-icon-as">AS</span>
+            <span class="asks-col-title">Asks</span>
+            <span class="asks-badge asks-badge-as">1</span>
+          </div>
+          <ul class="asks-items">
+            <li>Accurate <strong>website links, Enterprise IDs, and Rooftop IDs</strong> are required from the CSM team to ensure correct data mapping.</li>
+          </ul>
+        </div>
+        <div class="asks-col-ki">
+          <div class="asks-col-hdr">
+            <span class="asks-icon asks-icon-ki">KI</span>
+            <span class="asks-col-title">Key Initiatives</span>
+            <span class="asks-badge asks-badge-ki">3</span>
+          </div>
+          <ul class="asks-items">
+            <li>Website review speed increased by <strong>10–15X</strong> through the use of tools and scrapers.</li>
+            <li>Enabled CSMs to <strong>review clients more often</strong> to know the health of the client.</li>
+            <li>Helped support team in resolving tickets at a much faster rate — <strong>1 hr</strong> vs earlier <strong>1–2 days</strong>.</li>
+          </ul>
+        </div>
+      </div>
+    </div>`,
+  ];
+
+  // Layout: 3-column grid per row — [Total | Customer Segment | Asks & KI]
+  const layoutHTML = pairs.map(({ totalCard, segCard }, i) =>
+    `<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;align-items:stretch;">${totalCard}${segCard}${asksCards[i]||''}</div>`
   ).join('');
 
   currentSeg = origSeg;
