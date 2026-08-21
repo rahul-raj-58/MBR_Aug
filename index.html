@@ -751,110 +751,98 @@ function buildCatalogSegHTML(seg, segDef) {
   if (!cat) { currentSeg = origSeg; return ''; }
   const CAT_SEGS = ['ENT','MID','SMB'];
 
-  function buildMetricCard(m) {
-    // Use total monthly data to define columns (consistent headers across both views)
+  // Returns { totalCard, segCard } HTML strings for a given metric
+  function buildMetricCards(m) {
     const colMos = MONTHS.filter(mo => m.monthly[mo] != null);
-    // Also surface any month that has seg-only data (e.g. Aug for Live Accounts)
     const extraMos = m.seg ? MONTHS.filter(mo => !colMos.includes(mo) && CAT_SEGS.some(s => m.seg[mo] && m.seg[mo][s] != null)) : [];
     const allMos = [...colMos, ...extraMos];
-    if (!allMos.length) allMos.push(...MONTHS.filter(mo => m.monthly[mo] != null || true).slice(0,4));
 
     const labelPct = 28;
     const moPct = ((100 - labelPct) / Math.max(allMos.length, 1)).toFixed(2);
     const colgroup = `<colgroup><col style="width:${labelPct}%">${allMos.map(()=>`<col style="width:${moPct}%">`).join('')}</colgroup>`;
     const monthHeaders = allMos.map(mo => `<th>${mo}</th>`).join('');
-
-    // Determine what rows to show based on current seg
-    let bodyRows = '';
-    if (seg === 'all') {
-      // Total row
-      const totalCells = allMos.map((mo, moIdx) => {
-        const val = m.monthly[mo] ?? null;
-        const prev = moIdx > 0 ? (m.monthly[allMos[moIdx-1]] ?? null) : null;
-        if (val == null) return `<td>—</td>`;
-        const delta = prev != null ? val - prev : null;
-        const g = cellColor(delta, m.dir, moIdx);
-        const isLatest = moIdx === allMos.length - 1;
-        return `<td class="${[g,isLatest?'latest':''].filter(Boolean).join(' ')}">${fmt(val,m.type)}</td>`;
-      }).join('');
-      const te = latestPrior(m.monthly);
-      const td = te.latestVal!=null&&te.priorVal!=null ? te.latestVal-te.priorVal : null;
-      const tg = td!=null ? good(td,m.dir) : 'neutral';
-      bodyRows += `<tr class="stripe-${tg}"><td>Total</td>${totalCells}</tr>`;
-      // Segment breakdown rows (only if seg data exists)
-      if (m.seg && Object.keys(m.seg).length > 0) {
-        CAT_SEGS.forEach(s => {
-          const hasSData = allMos.some(mo => m.seg[mo] && m.seg[mo][s] != null);
-          if (!hasSData) return;
-          const cells = allMos.map((mo, moIdx) => {
-            const val = m.seg[mo] ? (m.seg[mo][s] ?? null) : null;
-            const prev = moIdx > 0 && m.seg[allMos[moIdx-1]] ? (m.seg[allMos[moIdx-1]][s] ?? null) : null;
-            if (val == null) return `<td>—</td>`;
-            const d = prev != null ? val - prev : null;
-            const g = d != null ? cellColor(d, m.dir, moIdx) : 'no-prior';
-            const isLatest = moIdx === allMos.length - 1;
-            return `<td class="${[g,isLatest?'latest':''].filter(Boolean).join(' ')}">${fmt(val,m.type)}</td>`;
-          }).join('');
-          const lastMo = allMos[allMos.length-1];
-          const prevMo = allMos.length>1 ? allMos[allMos.length-2] : null;
-          const lv = m.seg[lastMo] ? (m.seg[lastMo][s]??null) : null;
-          const pv = prevMo && m.seg[prevMo] ? (m.seg[prevMo][s]??null) : null;
-          const sd = lv!=null&&pv!=null ? lv-pv : null;
-          const sg = sd!=null ? good(sd,m.dir) : 'neutral';
-          bodyRows += `<tr class="stripe-${sg}"><td style="padding-left:16px;font-size:11px;color:var(--text-muted);">${s}</td>${cells}</tr>`;
-        });
-      }
-    } else {
-      // Single segment row
-      const cells = allMos.map((mo, moIdx) => {
-        const val = m.seg && m.seg[mo] ? (m.seg[mo][seg] ?? null) : (m.monthly[mo] ?? null);
-        const prevMo = moIdx > 0 ? allMos[moIdx-1] : null;
-        const prev = prevMo ? (m.seg && m.seg[prevMo] ? (m.seg[prevMo][seg]??null) : (m.monthly[prevMo]??null)) : null;
-        if (val == null) return `<td>—</td>`;
-        const delta = prev != null ? val - prev : null;
-        const g = cellColor(delta, m.dir, moIdx);
-        const isLatest = moIdx === allMos.length - 1;
-        return `<td class="${[g,isLatest?'latest':''].filter(Boolean).join(' ')}">${fmt(val,m.type)}</td>`;
-      }).join('');
-      // Determine stripe
-      const lastMo = allMos[allMos.length-1];
-      const prevMo = allMos.length>1 ? allMos[allMos.length-2] : null;
-      const getV = mo => m.seg && m.seg[mo] ? (m.seg[mo][seg]??null) : (m.monthly[mo]??null);
-      const lv = getV(lastMo); const pv = prevMo ? getV(prevMo) : null;
-      const sd = lv!=null&&pv!=null ? lv-pv : null;
-      const sg = sd!=null ? good(sd,m.dir) : 'neutral';
-      bodyRows += `<tr class="stripe-${sg}"><td>${seg}</td>${cells}</tr>`;
-    }
-
-    // Badge: latest effective value
-    const eff = effectiveLatest(m);
-    const badge = eff.latestVal != null
-      ? `<span class="trend-sla-badge">${fmt(eff.latestVal, m.type)}</span>` : '';
     const cardTitle = m.name === 'Live Accounts' ? 'Catalog' : m.name;
 
-    return `<div class="trend-card">
-      <div class="trend-card-hdr">
-        <div class="trend-card-hdr-left">
-          <span class="prod-dot" style="background:#059669"></span>
-          <div>
-            <div class="prod-name">${cardTitle}</div>
-            <div class="prod-owner">${cat.owner}</div>
+    function makeCard(title, rowsHTML, badgeVal) {
+      const badge = badgeVal != null ? `<span class="trend-sla-badge">${fmt(badgeVal, m.type)}</span>` : '';
+      return `<div class="trend-card">
+        <div class="trend-card-hdr">
+          <div class="trend-card-hdr-left">
+            <span class="prod-dot" style="background:#059669"></span>
+            <div>
+              <div class="prod-name">${title}</div>
+              <div class="prod-owner">${cat.owner}</div>
+            </div>
           </div>
+          ${badge}
         </div>
-        ${badge}
-      </div>
-      <table class="tt">
-        ${colgroup}
-        <thead><tr><th>Segment</th>${monthHeaders}</tr></thead>
-        <tbody>${bodyRows}</tbody>
-      </table>
-    </div>`;
+        <table class="tt">
+          ${colgroup}
+          <thead><tr><th>Segment</th>${monthHeaders}</tr></thead>
+          <tbody>${rowsHTML}</tbody>
+        </table>
+      </div>`;
+    }
+
+    // ── Total card ──
+    const totalCells = allMos.map((mo, moIdx) => {
+      const val = m.monthly[mo] ?? null;
+      const prev = moIdx > 0 ? (m.monthly[allMos[moIdx-1]] ?? null) : null;
+      if (val == null) return `<td>—</td>`;
+      const d = prev != null ? val - prev : null;
+      const g = cellColor(d, m.dir, moIdx);
+      const isLatest = moIdx === allMos.length - 1;
+      return `<td class="${[g,isLatest?'latest':''].filter(Boolean).join(' ')}">${fmt(val,m.type)}</td>`;
+    }).join('');
+    const te = latestPrior(m.monthly);
+    const td = te.latestVal!=null&&te.priorVal!=null ? te.latestVal-te.priorVal : null;
+    const tg = td!=null ? good(td,m.dir) : 'neutral';
+    const totalCard = makeCard(cardTitle, `<tr class="stripe-${tg}"><td>Total</td>${totalCells}</tr>`, te.latestVal);
+
+    // ── Customer Segment card ──
+    const hasSeg = m.seg && Object.keys(m.seg).length > 0;
+    let segRows = '';
+    if (hasSeg) {
+      CAT_SEGS.forEach(s => {
+        const hasSData = allMos.some(mo => m.seg[mo] && m.seg[mo][s] != null);
+        const cells = allMos.map((mo, moIdx) => {
+          const val = hasSData && m.seg[mo] ? (m.seg[mo][s] ?? null) : null;
+          const prev = moIdx > 0 && m.seg[allMos[moIdx-1]] ? (m.seg[allMos[moIdx-1]][s] ?? null) : null;
+          if (val == null) return `<td>—</td>`;
+          const d = prev != null ? val - prev : null;
+          const g = cellColor(d, m.dir, moIdx);
+          const isLatest = moIdx === allMos.length - 1;
+          return `<td class="${[g,isLatest?'latest':''].filter(Boolean).join(' ')}">${fmt(val,m.type)}</td>`;
+        }).join('');
+        const lastMo = allMos[allMos.length-1];
+        const prevMo = allMos.length>1 ? allMos[allMos.length-2] : null;
+        const lv = m.seg[lastMo] ? (m.seg[lastMo][s]??null) : null;
+        const pv = prevMo && m.seg[prevMo] ? (m.seg[prevMo][s]??null) : null;
+        const sd = lv!=null&&pv!=null ? lv-pv : null;
+        const sg = sd!=null ? good(sd,m.dir) : 'neutral';
+        segRows += `<tr class="stripe-${sg}"><td>${s}</td>${cells}</tr>`;
+      });
+    } else {
+      segRows = `<tr><td colspan="${allMos.length+1}" style="color:var(--text-muted);font-size:12px;padding:14px;">Segment data not yet available</td></tr>`;
+    }
+    // Badge for seg card: latest SMB value if exists, else nothing
+    const lastMo = allMos[allMos.length-1];
+    const segBadgeVal = hasSeg && m.seg[lastMo] ? (m.seg[lastMo]['SMB'] ?? null) : null;
+    const segCard = makeCard(`${cardTitle} · Customer Segment`, segRows, null);
+
+    return { totalCard, segCard };
   }
 
-  const cardsHTML = cat.metrics.map(buildMetricCard).join('');
+  const pairs = cat.metrics.map(buildMetricCards);
+
+  // Layout: [Catalog Total] then [Catalog Seg] then [WebReviews Total] then [WebReviews Seg]
+  const layoutHTML = pairs.map(({ totalCard, segCard }) =>
+    `${totalCard}${segCard}`
+  ).join('');
+
   currentSeg = origSeg;
   const badgeRow = segDef ? `<div class="seg-trend-label"><span class="seg-badge" style="background:${segDef.color}">${segDef.label}</span></div>` : '';
-  return `${badgeRow}<div style="display:flex;flex-direction:column;gap:16px;">${cardsHTML}</div>`;
+  return `${badgeRow}<div style="display:flex;flex-direction:column;gap:16px;">${layoutHTML}</div>`;
 }
 
 function renderCatalog() {
