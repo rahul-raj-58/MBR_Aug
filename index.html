@@ -122,7 +122,7 @@ body { font-family:'Inter',system-ui,sans-serif; background:var(--bg); color:var
 /* ── TREND TABLES ── */
 /* 3 product cards side by side; rows = metrics, cols = months */
 .trend-wrap { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:32px; align-items:start; }
-.trend-card { background:var(--card); border:1px solid var(--border); border-radius:14px; overflow:hidden; box-shadow:var(--shadow); }
+.trend-card { background:var(--card); border:1px solid var(--border); border-radius:14px; overflow:hidden; box-shadow:var(--shadow); height:100%; }
 .trend-card-hdr { padding:13px 16px 10px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:9px; justify-content:space-between; }
 .trend-card-hdr .prod-dot { width:11px; height:11px; border-radius:50%; flex-shrink:0; }
 .trend-card-hdr .prod-name { font-size:14px; font-weight:700; color:var(--text); }
@@ -249,7 +249,7 @@ footer { padding-top:24px; border-top:1px solid var(--border); font-size:11px; c
 
   <!-- ═══ CATALOG & WEBSITE TAB ═══ -->
   <div class="tab-pane" id="pane-catalog">
-    <div id="catalogSections"></div>
+    <div id="catalogSections" style="max-width:1100px;"></div>
   </div><!-- /catalog tab -->
 
   <!-- ═══ ASKS & KEY INITIATIVES TAB ═══ -->
@@ -835,14 +835,14 @@ function buildCatalogSegHTML(seg, segDef) {
 
   const pairs = cat.metrics.map(buildMetricCards);
 
-  // Layout: each metric = one row with [Total | Seg] side by side
+  // Layout: each metric = one row with [Total | Seg] side by side, cards stretch to equal height
   const layoutHTML = pairs.map(({ totalCard, segCard }) =>
-    `<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;">${totalCard}${segCard}</div>`
+    `<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:stretch;">${totalCard}${segCard}</div>`
   ).join('');
 
   currentSeg = origSeg;
   const badgeRow = segDef ? `<div class="seg-trend-label"><span class="seg-badge" style="background:${segDef.color}">${segDef.label}</span></div>` : '';
-  return `${badgeRow}<div style="display:flex;flex-direction:column;gap:16px;">${layoutHTML}</div>`;
+  return `${badgeRow}<div style="display:flex;flex-direction:column;gap:20px;">${layoutHTML}</div>`;
 }
 
 function renderCatalog() {
