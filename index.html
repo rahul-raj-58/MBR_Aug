@@ -249,7 +249,7 @@ footer { padding-top:24px; border-top:1px solid var(--border); font-size:11px; c
 
   <!-- ═══ CATALOG & WEBSITE TAB ═══ -->
   <div class="tab-pane" id="pane-catalog">
-    <div id="catalogSections" style="max-width:780px;"></div>
+    <div id="catalogSections"></div>
   </div><!-- /catalog tab -->
 
   <!-- ═══ ASKS & KEY INITIATIVES TAB ═══ -->
@@ -835,9 +835,9 @@ function buildCatalogSegHTML(seg, segDef) {
 
   const pairs = cat.metrics.map(buildMetricCards);
 
-  // Layout: [Catalog Total] then [Catalog Seg] then [WebReviews Total] then [WebReviews Seg]
+  // Layout: each metric = one row with [Total | Seg] side by side
   const layoutHTML = pairs.map(({ totalCard, segCard }) =>
-    `${totalCard}${segCard}`
+    `<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;">${totalCard}${segCard}</div>`
   ).join('');
 
   currentSeg = origSeg;
