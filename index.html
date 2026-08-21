@@ -521,7 +521,7 @@ let DATA = [
     code:'catalog', name:'Catalog', owner:'Sumit Rana', color:'#059669',
     metrics:[
       { id:'D1', name:'Live Accounts', type:'count', dir:'down',
-        monthly:{May:60,Jun:61,Jul:60,Aug:null}, seg:null },
+        monthly:{May:60,Jun:61,Jul:60,Aug:null}, seg:{May:{SMB:27},Aug:{SMB:23}} },
       { id:'D2', name:'Website Reviews', type:'count', dir:'neutral',
         monthly:{May:16500,Jun:302078,Jul:856296,Aug:null}, seg:null },
     ]
@@ -745,125 +745,124 @@ function renderDelivery() { buildSegSections([SEG_ALL, SEG_ENT], 'deliveryConten
 function renderMid()      { buildSegSections([SEG_MID, SEG_SMB], 'midContent'); }
 
 // ── CATALOG ──
-function renderCatalog() {
-  const cat = DATA.find(p=>p.code==='catalog');
-  if (!cat) return;
-  const SEGS = ['ENT','MID','SMB'];
+function buildCatalogSegHTML(seg, segDef) {
+  const origSeg = currentSeg; currentSeg = seg;
+  const cat = DATA.find(p => p.code === 'catalog');
+  if (!cat) { currentSeg = origSeg; return ''; }
+  const CAT_SEGS = ['ENT','MID','SMB'];
 
-  // Shared helper: build a <colgroup> for a table with a label col + N month cols
-  function catColgroup(nMo) {
-    const labelPct = 22;
-    const moPct = ((100 - labelPct) / nMo).toFixed(2);
-    return `<colgroup><col style="width:${labelPct}%">${Array(nMo).fill(`<col style="width:${moPct}%">`).join('')}</colgroup>`;
-  }
+  function buildMetricCard(m) {
+    // Use total monthly data to define columns (consistent headers across both views)
+    const colMos = MONTHS.filter(mo => m.monthly[mo] != null);
+    // Also surface any month that has seg-only data (e.g. Aug for Live Accounts)
+    const extraMos = m.seg ? MONTHS.filter(mo => !colMos.includes(mo) && CAT_SEGS.some(s => m.seg[mo] && m.seg[mo][s] != null)) : [];
+    const allMos = [...colMos, ...extraMos];
+    if (!allMos.length) allMos.push(...MONTHS.filter(mo => m.monthly[mo] != null || true).slice(0,4));
 
-  const html = cat.metrics.map(m => {
-    const e = latestPrior(m.monthly);
-    const delta = e.latestVal!=null && e.priorVal!=null ? e.latestVal-e.priorVal : null;
-    const g = delta!=null ? good(delta,m.dir) : 'neutral';
+    const labelPct = 34;
+    const moPct = ((100 - labelPct) / Math.max(allMos.length, 1)).toFixed(2);
+    const colgroup = `<colgroup><col style="width:${labelPct}%">${allMos.map(()=>`<col style="width:${moPct}%">`).join('')}</colgroup>`;
+    const monthHeaders = allMos.map(mo => `<th>${mo}</th>`).join('');
 
-    // Months that have data — used as column headers in both tables
-    const dataMos = MONTHS.filter(mo => m.monthly[mo]!=null);
-
-    // ── Monthly trend table: rows = [Value, vs Prior], cols = months ──
-    const moHeaders = dataMos.map(mo => `<th>${mo}</th>`).join('');
-
-    // Value row
-    const valCells = dataMos.map((mo, i) => {
-      const val = m.monthly[mo];
-      const prev = i > 0 ? m.monthly[dataMos[i-1]] : null;
-      const d = prev!=null ? val-prev : null;
-      const gc = d!=null ? good(d,m.dir) : '';
-      const isLatest = i === dataMos.length-1;
-      return `<td class="${[gc, isLatest?'latest':''].filter(Boolean).join(' ')}">${fmt(val,m.type)}</td>`;
-    }).join('');
-
-    // Delta row
-    const deltaCells = dataMos.map((mo, i) => {
-      const val = m.monthly[mo];
-      const prev = i > 0 ? m.monthly[dataMos[i-1]] : null;
-      const d = prev!=null ? val-prev : null;
-      const gc = d!=null ? good(d,m.dir) : '';
-      return `<td class="${gc}" style="font-size:11px">${d!=null ? dfmt(d,m.type) : '—'}</td>`;
-    }).join('');
-
-    const monthlyTable = `<div class="trend-card" style="margin-bottom:14px;">
-      <div style="padding:9px 14px 8px;border-bottom:1px solid var(--border);background:var(--row-alt);">
-        <span style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--purple-mid);">Monthly Trend</span>
-      </div>
-      <table class="tt" style="table-layout:fixed;">${catColgroup(dataMos.length)}
-        <thead><tr><th></th>${moHeaders}</tr></thead>
-        <tbody>
-          <tr class="stripe-${g}"><td>${m.name}</td>${valCells}</tr>
-          <tr><td style="color:var(--text-muted);">vs Prior</td>${deltaCells}</tr>
-        </tbody>
-      </table>
-    </div>`;
-
-    // ── Segment trend table: rows = ENT/MID/SMB, cols = months ──
-    const hasSeg = m.seg && Object.keys(m.seg).length > 0;
-    // find months with any seg data
-    const segMos = hasSeg ? MONTHS.filter(mo => m.seg[mo] && SEGS.some(s => m.seg[mo][s]!=null)) : [];
-
-    let segTable;
-    if (!hasSeg || !segMos.length) {
-      segTable = `<div class="trend-card">
-        <div style="padding:9px 14px 8px;border-bottom:1px solid var(--border);background:var(--row-alt);">
-          <span style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--purple-mid);">Customer Segment Trend</span>
-        </div>
-        <div class="seg-empty">Segment-level data not yet tracked for this metric. Will populate automatically on refresh once reported in the sheet.</div>
-      </div>`;
-    } else {
-      const segMoHeaders = segMos.map(mo => `<th>${mo}</th>`).join('');
-      const segRows = SEGS.map(seg => {
-        const cells = segMos.map((mo, i) => {
-          const val = m.seg[mo] ? m.seg[mo][seg] : null;
-          const prev = i > 0 && m.seg[segMos[i-1]] ? m.seg[segMos[i-1]][seg] : null;
-          if (val == null) return `<td>—</td>`;
-          const d = prev!=null ? val-prev : null;
-          const gc = d!=null ? good(d,m.dir) : '';
-          const isLatest = i === segMos.length-1;
-          return `<td class="${[gc, isLatest?'latest':''].filter(Boolean).join(' ')}">${fmt(val,m.type)}</td>`;
-        }).join('');
-        // stripe based on last available delta for this seg
-        const lastIdx = segMos.length-1;
-        const lv = m.seg[segMos[lastIdx]]?.[seg];
-        const pv = lastIdx > 0 ? m.seg[segMos[lastIdx-1]]?.[seg] : null;
-        const sd = lv!=null && pv!=null ? lv-pv : null;
-        const sg = sd!=null ? good(sd,m.dir) : 'neutral';
-        return `<tr class="stripe-${sg}"><td>${seg}</td>${cells}</tr>`;
+    // Determine what rows to show based on current seg
+    let bodyRows = '';
+    if (seg === 'all') {
+      // Total row
+      const totalCells = allMos.map((mo, moIdx) => {
+        const val = m.monthly[mo] ?? null;
+        const prev = moIdx > 0 ? (m.monthly[allMos[moIdx-1]] ?? null) : null;
+        if (val == null) return `<td>—</td>`;
+        const delta = prev != null ? val - prev : null;
+        const g = cellColor(delta, m.dir, moIdx);
+        const isLatest = moIdx === allMos.length - 1;
+        return `<td class="${[g,isLatest?'latest':''].filter(Boolean).join(' ')}">${fmt(val,m.type)}</td>`;
       }).join('');
-
-      segTable = `<div class="trend-card">
-        <div style="padding:9px 14px 8px;border-bottom:1px solid var(--border);background:var(--row-alt);">
-          <span style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--purple-mid);">Customer Segment Trend</span>
-        </div>
-        <table class="tt" style="table-layout:fixed;">${catColgroup(segMos.length)}
-          <thead><tr><th>Segment</th>${segMoHeaders}</tr></thead>
-          <tbody>${segRows}</tbody>
-        </table>
-      </div>`;
+      const te = latestPrior(m.monthly);
+      const td = te.latestVal!=null&&te.priorVal!=null ? te.latestVal-te.priorVal : null;
+      const tg = td!=null ? good(td,m.dir) : 'neutral';
+      bodyRows += `<tr class="stripe-${tg}"><td>Total</td>${totalCells}</tr>`;
+      // Segment breakdown rows (only if seg data exists)
+      if (m.seg && Object.keys(m.seg).length > 0) {
+        CAT_SEGS.forEach(s => {
+          const hasSData = allMos.some(mo => m.seg[mo] && m.seg[mo][s] != null);
+          if (!hasSData) return;
+          const cells = allMos.map((mo, moIdx) => {
+            const val = m.seg[mo] ? (m.seg[mo][s] ?? null) : null;
+            const prev = moIdx > 0 && m.seg[allMos[moIdx-1]] ? (m.seg[allMos[moIdx-1]][s] ?? null) : null;
+            if (val == null) return `<td>—</td>`;
+            const d = prev != null ? val - prev : null;
+            const g = d != null ? cellColor(d, m.dir, moIdx) : 'no-prior';
+            const isLatest = moIdx === allMos.length - 1;
+            return `<td class="${[g,isLatest?'latest':''].filter(Boolean).join(' ')}">${fmt(val,m.type)}</td>`;
+          }).join('');
+          const lastMo = allMos[allMos.length-1];
+          const prevMo = allMos.length>1 ? allMos[allMos.length-2] : null;
+          const lv = m.seg[lastMo] ? (m.seg[lastMo][s]??null) : null;
+          const pv = prevMo && m.seg[prevMo] ? (m.seg[prevMo][s]??null) : null;
+          const sd = lv!=null&&pv!=null ? lv-pv : null;
+          const sg = sd!=null ? good(sd,m.dir) : 'neutral';
+          bodyRows += `<tr class="stripe-${sg}"><td style="padding-left:16px;font-size:11px;color:var(--text-muted);">${s}</td>${cells}</tr>`;
+        });
+      }
+    } else {
+      // Single segment row
+      const cells = allMos.map((mo, moIdx) => {
+        const val = m.seg && m.seg[mo] ? (m.seg[mo][seg] ?? null) : (m.monthly[mo] ?? null);
+        const prevMo = moIdx > 0 ? allMos[moIdx-1] : null;
+        const prev = prevMo ? (m.seg && m.seg[prevMo] ? (m.seg[prevMo][seg]??null) : (m.monthly[prevMo]??null)) : null;
+        if (val == null) return `<td>—</td>`;
+        const delta = prev != null ? val - prev : null;
+        const g = cellColor(delta, m.dir, moIdx);
+        const isLatest = moIdx === allMos.length - 1;
+        return `<td class="${[g,isLatest?'latest':''].filter(Boolean).join(' ')}">${fmt(val,m.type)}</td>`;
+      }).join('');
+      // Determine stripe
+      const lastMo = allMos[allMos.length-1];
+      const prevMo = allMos.length>1 ? allMos[allMos.length-2] : null;
+      const getV = mo => m.seg && m.seg[mo] ? (m.seg[mo][seg]??null) : (m.monthly[mo]??null);
+      const lv = getV(lastMo); const pv = prevMo ? getV(prevMo) : null;
+      const sd = lv!=null&&pv!=null ? lv-pv : null;
+      const sg = sd!=null ? good(sd,m.dir) : 'neutral';
+      bodyRows += `<tr class="stripe-${sg}"><td>${seg}</td>${cells}</tr>`;
     }
 
-    return `<div class="cat-section">
-      <div class="cat-section-hdr">
-        <div class="cat-section-title">
-          <span class="cat-section-dot" style="background:#059669"></span>
-          ${m.name === 'Live Accounts' ? 'Catalog' : m.name}
-        </div>
-        <div class="cat-section-kpi">
-          ${e.latestVal!=null ? `<span class="cat-kpi-val">${fmt(e.latestVal,m.type)}</span>` : ''}
-          ${e.latestMo ? `<span class="cat-kpi-period">${e.latestMo}</span>` : ''}
-          ${delta!=null ? `<span class="cat-kpi-delta ${g}">${dfmt(delta,m.type)} vs ${e.priorMo}</span>` : ''}
-        </div>
-      </div>
-      ${monthlyTable}
-      ${segTable}
-    </div>`;
-  }).join('');
+    // Badge: latest effective value
+    const eff = effectiveLatest(m);
+    const badge = eff.latestVal != null
+      ? `<span class="trend-sla-badge">${fmt(eff.latestVal, m.type)}</span>` : '';
+    const cardTitle = m.name === 'Live Accounts' ? 'Catalog' : m.name;
 
-  document.getElementById('catalogSections').innerHTML =
-    `<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start;">${html}</div>`;
+    return `<div class="trend-card">
+      <div class="trend-card-hdr">
+        <div class="trend-card-hdr-left">
+          <span class="prod-dot" style="background:#059669"></span>
+          <div>
+            <div class="prod-name">${cardTitle}</div>
+            <div class="prod-owner">${cat.owner}</div>
+          </div>
+        </div>
+        ${badge}
+      </div>
+      <table class="tt">
+        ${colgroup}
+        <thead><tr><th>Segment</th>${monthHeaders}</tr></thead>
+        <tbody>${bodyRows}</tbody>
+      </table>
+    </div>`;
+  }
+
+  const cardsHTML = cat.metrics.map(buildMetricCard).join('');
+  currentSeg = origSeg;
+  const badgeRow = segDef ? `<div class="seg-trend-label"><span class="seg-badge" style="background:${segDef.color}">${segDef.label}</span></div>` : '';
+  return `${badgeRow}<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;">${cardsHTML}</div>`;
+}
+
+function renderCatalog() {
+  const defs = [SEG_ALL, SEG_SMB];
+  const html = defs.map(def => `
+    <div class="seg-section">${buildCatalogSegHTML(def.key, def)}</div>
+  `).join('');
+  document.getElementById('catalogSections').innerHTML = html;
 }
 
 // ── FULL RENDER ──
