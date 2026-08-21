@@ -133,7 +133,9 @@ table.tt tr:last-child td { border-bottom:none; }
 table.tt td:first-child { text-align:left; font-weight:600; color:var(--text-muted); font-size:11px; overflow:hidden; text-overflow:ellipsis; }
 table.tt td.good { color:var(--good); font-weight:700; }
 table.tt td.bad  { color:var(--bad);  font-weight:700; }
-table.tt td.latest { font-weight:800; color:var(--text); }
+table.tt td.same { color:#CA8A04;    font-weight:700; }
+table.tt td.no-prior { color:var(--text); font-weight:600; }
+table.tt td.latest { font-weight:800; } /* colour inherits from good/bad/same/no-prior */
 table.tt tr:nth-child(even) td { background:var(--row-alt); }
 /* coloured stripe on left edge of metric row */
 table.tt tr td:first-child { border-left:3px solid transparent; padding-left:10px; }
@@ -256,17 +258,6 @@ footer { padding-top:24px; border-top:1px solid var(--border); font-size:11px; c
       <button class="seg-pill" data-seg="SMB" type="button">SMB</button>
     </div>
 
-    <!-- Banner -->
-    <div class="banner">
-      <span class="banner-dot" style="background:#15803D"></span>
-      <span class="banner-text" id="bannerImproving">—</span>
-      <div class="banner-sep"></div>
-      <span class="banner-dot" style="background:#B91C1C"></span>
-      <span class="banner-text" id="bannerSlipping">—</span>
-      <div class="banner-sep"></div>
-      <span class="banner-dot" style="background:#6760A6"></span>
-      <span class="banner-text" id="bannerTracked">—</span>
-    </div>
 
     <!-- Hero KPIs -->
     <div class="hero-row">
@@ -609,6 +600,12 @@ function good(delta, dir) {
   if (delta === 0) return 'neutral';
   return dir === 'up' ? (delta > 0 ? 'good' : 'bad') : (delta < 0 ? 'good' : 'bad');
 }
+// Trend-table cell colour: May (moIdx=0) → black, delta=0 → yellow, else good/bad
+function cellColor(delta, dir, moIdx) {
+  if (moIdx === 0 || delta == null) return 'no-prior';
+  if (delta === 0) return 'same';
+  return good(delta, dir);
+}
 function latestPrior(monthly) {
   let li = -1;
   for (let i = MONTHS.length-1; i >= 0; i--) { if (monthly[MONTHS[i]] != null) { li = i; break; } }
@@ -691,9 +688,6 @@ function renderHero() {
     }
   }));
   document.getElementById('heroImproving').textContent = improving+'/'+tracked;
-  document.getElementById('bannerImproving').textContent = improving+' Improving';
-  document.getElementById('bannerSlipping').textContent = slipping+' Slipping';
-  document.getElementById('bannerTracked').textContent = tracked+' Tracked';
 }
 
 // ── SNAPSHOT ──
@@ -799,7 +793,7 @@ function renderTrend() {
         const prevVal = moIdx > 0 ? effectiveVal(m, displayMonths[moIdx-1]) : null;
         if (val == null) return `<td>—</td>`;
         const delta = prevVal != null ? val - prevVal : null;
-        const g = delta != null ? good(delta, slot.dir) : '';
+        const g = cellColor(delta, slot.dir, moIdx);
         const isLatest = mo === displayMonths[displayMonths.length - 1];
         return `<td class="${[g, isLatest?'latest':''].filter(Boolean).join(' ')}">${fmt(val, slot.type)}</td>`;
       }).join('');
