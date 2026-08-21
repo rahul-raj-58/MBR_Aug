@@ -272,16 +272,16 @@ footer { padding-top:24px; border-top:1px solid var(--border); font-size:11px; c
     <div class="hero-row">
       <div class="hero-card dark">
         <div class="deco"></div><div class="deco2"></div>
-        <div class="hero-lbl">Blended SLA · Image + Video</div>
+        <div class="hero-lbl">Blended SLA · Image + 360 + Video</div>
         <div class="hero-val" id="heroSLA">—</div>
         <div class="hero-sub" id="heroSLASub">blended average</div>
         <div class="hero-chip neutral" id="heroSLADelta">—</div>
       </div>
       <div class="hero-card light">
-        <div class="hero-lbl">P95 Delivery Time · Image</div>
-        <div class="hero-val" id="heroP95">—</div>
-        <div class="hero-sub" id="heroP95Sub">latest period</div>
-        <div class="hero-chip neutral" id="heroP95Delta">—</div>
+        <div class="hero-lbl">Metrics On Track This Period</div>
+        <div class="hero-val" id="heroTrend">—</div>
+        <div class="hero-sub" id="heroTrendSub">of tracked KRs improving</div>
+        <div class="hero-chip neutral" id="heroTrendDelta">—</div>
       </div>
       <div class="hero-card light">
         <div class="hero-lbl">Metrics Improving This Period</div>
@@ -639,8 +639,9 @@ function renderHero() {
   const prods = DATA.filter(p => p.code !== 'catalog');
   const imgP = DATA.find(p => p.code==='image');
   const vidP = DATA.find(p => p.code==='video');
-  // Blended SLA
-  const slas = [imgP, vidP].map(p => p?.metrics.find(m=>m.name.toUpperCase().includes('SLA'))).filter(Boolean);
+  const threeP = DATA.find(p => p.code==='360');
+  // Blended SLA — Image + 360 + Video
+  const slas = [imgP, threeP, vidP].map(p => p?.metrics.find(m=>m.name.toUpperCase().includes('SLA'))).filter(Boolean);
   const slaVals = slas.map(m=>effectiveLatest(m)).filter(e=>e.latestVal!=null);
   const blendSLA = slaVals.length ? slaVals.reduce((a,e)=>a+e.latestVal,0)/slaVals.length : null;
   const blendPrior = slaVals.every(e=>e.priorVal!=null) ? slaVals.reduce((a,e)=>a+e.priorVal,0)/slaVals.length : null;
@@ -650,15 +651,32 @@ function renderHero() {
   const slaDEl = document.getElementById('heroSLADelta');
   slaDEl.className = 'hero-chip' + (slaDelta!=null ? ' '+good(slaDelta,'up') : ' neutral');
   slaDEl.textContent = slaDelta!=null ? dfmt(slaDelta,'pct')+' vs prior' : 'No comparison data';
-  // P95 Image
-  const p95m = imgP?.metrics.find(m=>m.name.includes('P95'));
-  const p95e = p95m ? effectiveLatest(p95m) : {};
-  const p95d = p95e.latestVal!=null && p95e.priorVal!=null ? p95e.latestVal-p95e.priorVal : null;
-  document.getElementById('heroP95').textContent = p95e.latestVal!=null ? fmt(p95e.latestVal,'hrs') : '—';
-  document.getElementById('heroP95Sub').textContent = p95e.latestMo ? 'Latest: '+p95e.latestMo : '—';
-  const p95El = document.getElementById('heroP95Delta');
-  p95El.className = 'hero-chip'+(p95d!=null ? ' '+good(p95d,'down') : ' neutral');
-  p95El.textContent = p95d!=null ? dfmt(p95d,'hrs')+' vs prior' : 'No comparison data';
+  // Metrics On Track — % improving this period vs prior period
+  let currImproving=0, currTotal=0, prevImproving=0, prevTotal=0;
+  prods.forEach(p => p.metrics.forEach(m => {
+    const validMos = MONTHS.filter(mo => effectiveVal(m, mo) != null);
+    if (validMos.length >= 2) {
+      const latest = validMos[validMos.length-1];
+      const prior  = validMos[validMos.length-2];
+      currTotal++;
+      if (good(effectiveVal(m,latest)-effectiveVal(m,prior), m.dir)==='good') currImproving++;
+    }
+    if (validMos.length >= 3) {
+      const p1 = validMos[validMos.length-2];
+      const p2 = validMos[validMos.length-3];
+      prevTotal++;
+      if (good(effectiveVal(m,p1)-effectiveVal(m,p2), m.dir)==='good') prevImproving++;
+    }
+  }));
+  const currPct = currTotal > 0 ? Math.round(currImproving/currTotal*100) : null;
+  const prevPct = prevTotal > 0 ? Math.round(prevImproving/prevTotal*100) : null;
+  const trendDelta = currPct!=null && prevPct!=null ? currPct-prevPct : null;
+  const trendLatestMo = MONTHS.filter(mo => prods.some(p=>p.metrics.some(m=>effectiveVal(m,mo)!=null))).at(-1);
+  document.getElementById('heroTrend').textContent = currPct!=null ? currPct+'%' : '—';
+  document.getElementById('heroTrendSub').textContent = currImproving+' of '+currTotal+' KRs improving'+(trendLatestMo?' · '+trendLatestMo:'');
+  const trendEl = document.getElementById('heroTrendDelta');
+  trendEl.className = 'hero-chip'+(trendDelta!=null ? ' '+good(trendDelta,'up') : ' neutral');
+  trendEl.textContent = trendDelta!=null ? (trendDelta>=0?'+':'')+trendDelta+'pp vs prior period' : 'No comparison data';
   // Improving count (delivery products only)
   let improving=0, slipping=0, tracked=0;
   prods.forEach(p => p.metrics.forEach(m => {
